@@ -1,0 +1,1209 @@
+# Variance II {#variance2}
+
+```{r purlheader, echo=FALSE}
+#' ---
+#' title: "SDD I module 10 : Variance II"
+#' author: "Ph. Grosjean et G. Engels"
+#' date: "2025-2026"
+#' output:
+#'   html_document:
+#'     highlight: kate
+#' ---
+#' 
+#' Document complémentaire au [module 10 du cours SDD I de 2025-2026](https://wp.sciviews.org/sdd-umons-2025/variance2.html).
+#' Distribué sous licence [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr).
+#' 
+#' **Veuillez vous référer au cours en ligne pour les explications et les interprétations de cette analyse.**
+#' 
+#' [Installer un environnement R](https://github.com/SciViews/svbox/tree/main/svbox2025-native)
+#' adéquat pour reproduire cette analyse. 
+```
+
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE, results='hide', purl=FALSE}
+SciViews::R("infer", "model", lang = "fr")
+```
+
+##### Objectifs {.unnumbered}
+
+-   Maîtriser différentes variantes d'ANOVA à deux facteurs
+
+-   Distinguer dans quel cas utiliser l'une ou l'autre de ces variantes
+
+-   Comprendre différentes variantes de la syntaxe de R
+
+##### Prérequis {.unnumbered}
+
+Ce module présente la suite de l'ANOVA initiée au module \@ref(variance). Vous devez avoir bien compris l'ANOVA à un facteur avant d'entamer le présent chapitre.
+
+## ANOVA à deux facteurs {#anovadeuxfacteurs}
+
+Dans le cadre de l'ANOVA à un facteur, nous avions une variable réponse numérique étudiée pour différents niveaux d'*une seule* variable facteur à *j* niveaux ou modalités. Le modèle utilisé était :
+
+$$y_{ij} = \mu + \tau_j + \epsilon_i \mathrm{\ avec\ } \epsilon \sim N(0, \sigma)$$
+
+Les $\tau_j$ représentent les variations entre la moyenne générale $\mu$ et les moyennes respectives des $j$ sous-populations comme $\mu + \tau_j$. En R, nous avons utilisé la formule suivante :
+
+$$y \sim fact$$
+
+avec $y$ la variable numérique réponse et $fact$ la variable facteur explicative unique.
+
+Si nous prenons notre exemple des crabes *L. variegatus*, nous avions travaillé un peu artificiellement sur une seule variable facteur en regroupant les deux variables `species` et `sex` en une seule variable `group`. Qu'en est-il si nous voulons quand même considérer les deux variables `species` et `sex` séparément ? c'est possible avec une **ANOVA à deux facteurs**. N'oubliez pas que les variables facteurs dans vos équations doivent bien être encodées comme objets **factor** ou **ordered** dans R. Si ces variables sont encodées comme valeurs numériques, la fonction `lm()` utilisée ici fera une *autre* analyse que l'ANOVA (elle fera une régression linéaire que nous aborderons dans le cours de science des données II) !
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(116, "A10Ha_anova2", height = 400, toc = "Principe de l'ANOVA à deux facteurs")`
+
+Les sections suivantes vous présentent quelques variantes possibles de cette analyse.
+
+## Modèle sans interactions {#anovasansinteractions}
+
+```{r anova2nointer, echo=FALSE}
+#'
+#' ### ANOVA à deux facteurs sans interactions {#anova2nointer}
+#'
+```
+
+La version la plus simple consiste à considérer deux facteurs *successivement*, c'est-à-dire que la variance est décomposée d'abord selon le premier facteur, et ensuite selon le second.
+
+$$y_{ijk} = \mu + \tau1_j + \tau2_k + \epsilon_i \mathrm{\ avec\ } \epsilon \sim N(0, \sigma)$$
+
+avec $\tau1_j$ correspondant à l'écart de la moyenne générale $µ$ à la moyenne selon la j^ème^ population pour la variable `fact1`, et $\tau2_k$ correspondant à l'écart vers le k^ème^ niveau d'une seconde variable `fact2`. La formule qui spécifie ce modèle dans R avec les trois variables `y`, `fact1` et `fact2` s'écrit :
+
+$$y \sim fact1 + fact2$$
+
+Notez que, quel que soit le niveau considéré pour $\tau1$, un niveau donné de $\tau2$ est constant dans l'équation qui décrit ce modèle. Cela signifie que l'on considère que les écarts pour les moyennes de la variable `fact2` sont toujours les mêmes depuis les moyennes de `fact1`. Donc, si une sous-population de `fact2` tend à avoir une moyenne, disons, supérieure pour la première sous-population de `fact1`, elle sera considérée comme ayant les mêmes écarts pour toutes les autres sous-populations de `fact1`. Évidemment, cette condition n'est pas toujours rencontrée dans la pratique. Le **graphique des interactions** (Fig. \@ref(fig:interactions)) permets de visualiser les écarts des moyennes respectives des différentes sous-populations. Si les segments de droites sont parallèles ou presque parallèles, nous pouvons considérer que les interactions sont faibles, voire nulles, et le présent modèle sera adapté.
+
+```{r interactions, fig.cap="Graphique des interactions entre les variables facteurs (espèce et sexe). Les traits (pratiquement) parallèles indiquent qu'il n'y a pas d'interactions, comme c'est le cas ici."}
+# Chargement du dialecte SciViews::R avec les modules infer et model
+SciViews::R("infer", "model", lang = "fr")
+# Lecture et transformation des données (calcul de aspect^5)
+read("crabs", package = "MASS", lang = "fr") %>.%
+  smutate(., aspect = labelise(
+    as.numeric(rear / width),
+    "Ratio largeur arrière / max", units = NA)) %>.%
+  smutate(., aspect5 = labelise(
+    aspect^5,
+    "(Ratio largeur arrière /max)^5", units = NA)) %>.%
+  sselect(., species, sex, aspect, aspect5) ->
+  crabs2
+
+# Graphique de base pour visualiser les interactions
+#chart$base(interaction.plot(crabs2$species, crabs2$sex, crabs2$aspect5))
+
+# Version avec chart
+crabs2 %>.%
+  sgroup_by(., species, sex) %>.%
+  ssummarise(., aspect5_groups = mean(aspect5)) %>.%
+  print(.) %>.% # Tableau des moyennes par groupes
+  chart(data = ., aspect5_groups ~ species %col=% sex %group=% sex) +
+    geom_line() +
+    geom_point()
+```
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(117, "A10Hb_variable_quali", height = 400, toc = "Différents types de variables")`
+
+Au niveau de la description préliminaire des données, nous pourrons utiliser un tableau qui résume la moyenne, la variance (ou l'écart type) et le nombre d'observations pour chaque combinaison des deux variables facteurs.
+
+<!-- Le template de ce code est disponible dans un "snippet" à partir du menu `hypothesis tests: means` ou `.hm`, et ensuite `two-way ANOVA (description)`. -->
+
+```{r}
+# Résumé des données en vue de réaliser une ANOVA à deux facteurs
+crabs2 %>.%
+  sgroup_by(., species, sex) %>.%
+  ssummarise(.,
+    "Moyenne aspect^5"  = fmean(aspect5),
+    "Variance aspect^5" = fvar(aspect5),
+    "N"                 = fnobs(aspect5))
+```
+
+Pour la visualisation graphique, nous sommes tributaires du nombre d'observations. Avec moins d'une petite dizaine d'observations, nous représenterons des points pour chaque observation et superposerons les moyennes. Lorsque le nombre est plus grand, nous pourrons utiliser soit les boites à moustaches, soit le graphique en violon si ce nombre est encore plus élevé. Voyons cela sur notre exemple. La Fig. \@ref(fig:crabs2boxplot) montre ce que cela donne si l'on opte pour les boites à moustaches.
+
+<!-- (les "snippets" dans le menu `chart: bivariate` peuvent être utilisés comme point de départ auquel nous ajoutons la seconde variable facteur pour les facettes multigraphiques séparée par un `|`) -->
+
+```{r crabs2boxplot, fig.cap="Taille relative de la carapace à l'arrière de crabes *L. variegatus* (deux variétés et deux sexes), version simple."}
+# Visualisation des données en vue d'une ANOVA à deux facteurs
+chart(data = crabs2, aspect5 ~ species | sex) +
+  geom_boxplot()
+```
+
+La Fig. \@ref(fig:crabs2boxplot2) est une version améliorée avec les observations et les moyennes pour chaque sous-groupe ajoutées au graphique selon la même technique que nous avions utilisée pour l'ANOVA à un facteur.
+
+```{r crabs2boxplot2, fig.cap="Taille relative de la carapace à l'arrière de crabes *L. variegatus* (deux variétés et deux sexes), version annotée."}
+# Version améliorée avec les observations et les moyennes
+chart(data = crabs2, aspect5 ~ species | sex) +
+  geom_boxplot() +
+  geom_jitter(width = 0.05, alpha = 0.3) +
+  stat_summary(geom = "point", fun = "mean", color = "red", size = 3)
+```
+
+Maintenant que nous avons décrit correctement nos données par rapport à l'analyse que nous souhaitons faire, nous pouvons réaliser notre ANOVA à deux facteurs. Nous devons vérifier l'homoscédasticité (variances intragroupes égales), mais le test de Bartlett que nous réalisons revient au même que celui que nous avons fait en décomposant toutes les sous-populations. Comme nous n'avons pas nécessairement ce calcul réalisé (la variable `group` que nous avions calculée au module \@ref(variance)), nous utilisons la fonction `interaction()` qui effectue ce calcul pour nous directement dans la formule :
+
+```{r}
+# Test d'homoscédasticité de Batlett pour l'ANOVA à deux facteurs
+bartlett.test(data = crabs2, aspect5 ~ interaction(species, sex))
+```
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(118, "A10Hc_bartlett", height = 400, toc = "Homoscédasticité et hétéroscédasticité")`
+
+Si vous comparez avec le test que nous avions fait dans le cas de l'ANOVA à un facteur sur la variable `group`, vous constaterez qu'il donne exactement le même résultat. Nous continuons avec notre ANOVA (que nous mettons en forme avec `tabularise()`).
+
+<!-- Nous avons un "snippet" pour cela dans le menu `hypothesis tests: means` à partir de `.hm` qui se nomme `two-way ANOVA (without interactions)`. -->
+
+```{r, warning=FALSE}
+# ANOVA à deux facteurs sans interaction
+anova(crabs2_anova2 <- lm(data = crabs2, aspect5 ~ species + sex)) %>.%
+  tabularise(.)
+```
+
+Comme la variance est décomposée en trois étapes (selon l'espèce, puis selon le sexe, puis les résidus), nous avons trois lignes dans le tableau de l'ANOVA. Nous effectuons **deux tests**. Le premier consiste à comparer les carrés moyens pour l'espèce par rapport aux résidus, lignes 1 et 3. Donc, la valeur *F* observée est le ratio des carrés moyens pour `species` divisé par carrés moyens des résidus (2,75•10^-5^ / 1,61•10^-6^ = 17,2), et cette valeur est reportée sur la loi de distribution théorique *F* pour obtenir une première valeur *p* (ici 5,12•10^-5^). De même, le second test qui s'intéresse au sexe calcule la valeur *F* par le ratio des carrés moyens pour `sex` divisé par carrés moyens des résidus (lignes 2 et 3, 6,99•10^-4^ / 1,61•10^-6^ = 435,7), et la loi *F* nous permet de calculer une valeur *p* pour ce second test (ici la valeur est inférieure à 2,2•10^-16^).
+
+Nous interprétons chacun des deux tests séparément. Dans notre cas, nous pouvons dire avec un seuil $\alpha$ de 5% que nous rejetons $H_0$ dans les deux cas (*p* \< $\alpha$). Donc le rapport largeur arrière sur largeur max de la carapace (élevé à la puissance 5) est significativement différent au seuil $\alpha$ de 5% à la fois en fonction de l'espèce (*F* = 17,2, ddl = 1 et 197, valeur *p* \<\< 0,001) et du sexe (*F* = 436, ddl = 1 et 197, valeur *p* \<\< 0,001)[^10-variance-ii-1].
+
+[^10-variance-ii-1]: Notez que si vous incluez le tableau de l'ANOVA dans votre rapport ou dans une publication, il n'est pas nécessaire de répéter les résultats des tests entre parenthèses. Vous pouvez juste vous référer au tableau en question.
+
+La suite logique consiste à réaliser des tests "post hoc". Ils ne sont pas vraiment nécessaires ici puisque nous n'avons que deux niveaux pour chacune des deux variables, mais nous les réalisons quand même pour montrer le code correspondant.
+
+<!-- Un template est accessible via le "snippet" `anova - multiple comparisons [multcomp]` du menu `.hm`. Pensez juste à rajouter le second facteur `sex` dans les arguments de la fonction `mcp()`. -->
+
+```{r}
+# Tests de comparaisons multiples selon la méthode HSD de Tukey
+summary(crabs2_posthoc2 <- confint(multcomp::glht(crabs2_anova2,
+  linfct = multcomp::mcp(species = "Tukey", sex = "Tukey"))))
+oma <- par(oma = c(0, 5.1, 0, 0))
+plot(crabs2_posthoc2)
+par(oma)
+rm(oma)
+```
+
+Ceci confirme que les différences sont significatives au seuil $\alpha$ de 5% puisque les valeurs *p* pour les comparaisons deux à deux sont inférieures à $\alpha$ et les intervalles de confiance sur le graphique ne contiennent pas zéro. Il ne nous reste plus qu'à vérifier la distribution des résidus de l'ANOVA pour que notre analyse soit complète (Fig. \@ref(fig:anova2-resid)). Nous utilisons la variante `qqplot` de `chart()` sur l'objet qui contient notre ANOVA.
+
+```{r anova2-resid, echo=FALSE, fig.cap="Graphique quantile-quantile des résidus pour l'ANOVA à deux facteurs sans interactions de `aspect^5`."}
+# Graphique quantile-quantile de notre ANOVA à deux facteurs sans interactions
+chart$qqplot(crabs2_anova2)
+```
+
+Encore une fois, nous voyons que les résidus sont quasiment les mêmes que précédemment, mais cela n'aurait pas été le cas si des interactions étaient présentes. La distribution s'éloigne un peu d'une gaussienne (distribution normale) pour les valeurs élevées surtout. Comme l'ANOVA est robuste à ce critère, et que l'homoscédasticité a été vérifiée sur la transformation puissance 5 de notre variable, nous pouvons conserver notre analyse moyennant une précaution supplémentaire : vérifier que les valeurs *p* sont **beaucoup** plus petites que notre seuil comme sécurité supplémentaire contre les approximations liées à la légère violation de la contrainte de distribution normale des résidus. C'est le cas ici, et nous pouvons donc conclure notre analyse.
+
+##### Conditions d'application {.unnumbered}
+
+-   échantillon représentatif (par exemple, aléatoire),
+-   observations indépendantes,
+-   variable **réponse** quantitative,
+-   deux variables **explicatives** qualitatives à deux niveaux ou plus,
+-   distribution **normale** des résidus $\epsilon_i$,
+-   **homoscédasticité** (mêmes variances intragroupes),
+-   pas d'**interactions** entre les deux variables explicatives.
+
+## Modèle croisé complet {#anovacomplete}
+
+```{r anova2complete, echo=FALSE}
+#'
+#' ### ANOVA à deux facteurs croisés complet {#anova2complete}
+#'
+```
+
+Le modèle ANOVA que nous venons de faire s'appelle un **modèle croisé** parce que les mesures sont effectuées pour chaque combinaison des niveaux des deux variables facteurs explicatives, et ce, de manière indépendante (les observations d'un niveau ne sont pas dépendantes de celles d'un autre niveau)[^10-variance-ii-2].
+
+[^10-variance-ii-2]: De plus, nous avons ici un **plan balancé** puisque le nombre de réplicats pour chaque niveau est le même. C'est une situation optimale qu'il faut toujours chercher à atteindre pour une ANOVA, même si un nombre différent d'observations par niveau est également accepté.
+
+```{r}
+# Dénombrement des observations par niveaux (ici le plan est balancé)
+scount(crabs2, species, sex)
+```
+
+Le modèle **croisé sans interactions** que nous avions utilisé est cependant *incomplet* puisque, pour considérer tous les cas possibles, il faut aussi tenir compte de ce que ces interactions peuvent exister et les inclure directement dans le modèle. Le **modèle complet** s'écrit comme ceci :
+
+$$y_{ijk} = \mu + \tau1_j + \tau2_k + \tau1\tau2_{jk} + \epsilon_i \mathrm{\ avec\ } \epsilon \sim N(0, \sigma)$$
+
+avec le nouveau terme $\tau1\tau2_{jk}$ qui correspond à la distance entre la *k*^ème^ moyenne générale (la moyenne quel que soit *j*) et la moyenne particulière pour les observations des populations particulières à *k* et *j* simultanément. Ce modèle permet ainsi que chaque moyenne $\bar{y}_{jk}$ puisse différer librement, et donc, autorise les **interactions**. Toujours considérant les trois variables `y`, `fact1` et `fact2`, ce modèle s'écrit dans R comme suit :
+
+$$y \sim fact1 + fact2 + fact1:fact2$$
+
+Avec $fact1:fact2$ étant le terme d'interactions. On peut aussi le simplifier en utilisant `*` à la place de `+` entre les deux variables facteurs, ce qui signifie implicitement de tenir également compte des interactions :
+
+$$y \sim fact1 * fact2$$
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(113, "A10Hd_modele", height = 400, toc = "Modèle croisé complet")`
+
+Cette fois-ci, la décomposition de la variable se fait en quatre étapes : (1) depuis la moyenne générale µ vers les *j*^èmes^ moyennes pour `fact1`, ensuite (2) de ces moyennes vers les *k*^èmes^ moyennes pour `fact2`, puis (3) de ces dernières vers la moyenne particulière pour le sous-groupe *jk*, et enfin (4) les résidus $\epsilon_i$ pour chaque observation. Voyons ce que donne ce modèle complet sur nos données `crabs2`.
+
+<!-- Un "snippets" est utilisable (`two-way ANOVA (complete model)`). -->
+
+```{r,  warning=FALSE}
+# ANOVA à deux facteurs, modèle complet avec interactions
+crabs2_anova2comp <- lm(data = crabs2, aspect5 ~ species * sex)
+anova(crabs2_anova2comp) %>.%
+  tabularise(.)
+```
+
+Le tableau de l'ANOVA se présente de manière similaire au modèle sans interactions, mais avec une ligne supplémentaire indiquée `species:sex` qui représente les interactions. Un troisième test est réalisé selon le même principe, c'est-à-dire que les carrés moyens en ligne 3 sont divisés par les carrés moyens des résidus en ligne 4 pour donner comme valeur *F* 5,21•10^-7^ / 1,61•10^-6^ = 0.324. Ensuite la comparaison à la distribution *F* théorique nous donne une valeur *p* de 0.57. Notez que les degrés de liberté (1 et 196) ont changé de même que les valeurs de *F* observées dans les deux lignes du dessus.
+
+Notre analyse confirme qu'il n'y a pas d'interactions. La valeur *p* (0,57) en regard du terme `species:sex` correspondant est très largement supérieure à $\alpha$ de 5%. Les tests relatifs à `species` et `sex` donnent des valeurs légèrement différentes de notre modèle sans interactions. Les différences entre les deux seront d'autant plus importantes que les interactions, s'il y en a, sont fortes. Les conclusions restent les mêmes que précédemment, et ici, nous démontrons par un test d'hypothèse que les interactions ne sont pas significatives. Naturellement, la description des données, les vérifications (homoscédasticité, distribution normale ou quasi normale des résidus) et les analyses "post-hoc" en cas de rejet de $H_0$ sont à réaliser ici aussi. Nous les avons déjà faites plus haut à peu de choses près (les résultats sont ici très proches de ceux du modèle sans interactions, puisque ces dernières sont négligeables).
+
+```{block, type='warning', purl=FALSE}
+Faites attention à un piège fréquent lorsque vous avez des mesures multiples sur les *mêmes* individus. Par exemple, si vous étudiez trois populations avec disons, cinq réplicats par population et que vous dénombrez des cellules marquées sur dix coupes histologiques réalisées chaque fois dans un organe du *même* individu, vous aurez 3x5x10 = 150 mesures, mais vous ne pouvez pas utiliser une ANOVA à deux facteurs croisés car les 150 observations ne sont pas indépendantes les unes des autres. Vous n'avez jamais mesuré que 15 individus au total. Si vous analysez ces données comme si vous en aviez mesuré 150, **votre analyse sera incorrecte**. Il s'agit ici d'une erreur qui s'appelle la **pseudo-réplication**. Vous devrez utiliser d'autres modèles comme le modèle à facteurs hiérarchisés (voir section suivante) ou le modèle à mesures répétées (voir encore après).
+```
+
+##### Conditions d'application {.unnumbered}
+
+Les conditions d'application sont les mêmes que pour l'ANOVA à deux facteurs sans interactions, sauf qu'ici, les interactions sont bien évidemment permises.
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(112, "A10He_interactions", height = 400, toc = "Graphique des interactions")`
+
+`r learnr("A10La_anova2", title = "ANOVA à 2 facteurs", toc = "Analyse de variance à 2 facteurs")`
+
+##### Pour en savoir plus {.unnumbered}
+
+-   Une page en français qui explique l'[ANOVA à deux facteurs](https://delladata.fr/introduction-anova-a-2-facteurs/). Suivez les liens pour la suite et pour l'application dans R.
+
+<!-- Plus disponible !? Un blog en français qui explique l'[ANOVA à deux facteurs](https://statistique-et-logiciel-r.com/anova-a-2-facteurs-principe/) de manière plus détaillée qu'ici. Ensuite la [résolution de leur exemple dans R](https://statistique-et-logiciel-r.com/anova-a-2-facteurs-avec-r-tutoriel/). Enfin, des suggestions pour annoter un graphique et [indiquer quelles sont les différences qui sont significatives dessus](https://statistique-et-logiciel-r.com/comparaison-de-moyennes-indiquer-les-differences-significatives-sur-le-graph/). -->
+
+##### À vous de jouer ! {.unnumbered}
+
+```{r assign_A10Ia_anova2_I, echo=FALSE, results='asis', purl=FALSE}
+if (exists("assignment"))
+  assignment("A10Ia_anova2", part = "I",
+    url = "https://github.com/BioDataScience-Course/A10Ia_anova2",
+    course.ids = c(
+      'S-BIOG-027' = !"A10Ia-{YY}M-anova2"),
+    course.urls = c(
+      'S-BIOG-027' = !"{assign_url$A10Ia_anova2}"),
+    course.starts = c(
+      'S-BIOG-027' = !"{class1_start(mod, 'A10')}"),
+    course.ends = c(
+      'S-BIOG-027' = !"{n3_end(mod, 'A10')}"),
+    term = "Q2", level = 3,
+    toc = "ANOVA 2 facteurs, part I")
+```
+
+## Facteurs hiérarchisés {#anovahierarchisee}
+
+```{r anova2hierar, echo=FALSE}
+#'
+#' ### ANOVA à deux facteurs hiérarchisés {#anova2hierar}
+#'
+```
+
+
+Nous n'avons pas toujours la possibilité de croiser les deux facteurs. Considérons le cas d'une étude d'intercalibration. Nous avons un ou plusieurs échantillons répartis entre plusieurs laboratoires, et comme les analyses dépendent éventuellement aussi du technicien qui fait la mesure, nous demandons à chaque laboratoire de répéter les mesures avec deux de leurs techniciens. Problème : ici, il s'agit bien évidemment de techniciens *différents* dans chaque laboratoire. Comment faire, sachant que pour le modèle croisé, il faudrait que les deux *mêmes* techniciens aient fait toutes les mesures *dans tous* les laboratoires ?
+
+La solution est le modèle à facteurs hiérarchisés qui s'écrit :
+
+$$y_{ijk} = \mu + \tau1_j + \tau2_k(\tau1_j) + \epsilon_i \mathrm{\ avec\ } \ \epsilon_i \sim N(0, \sigma) $$
+
+... et dans R, nous utiliserons la formule suivante :
+
+$$y \sim fact1 + fact2\ \%in\%\ fact1$$
+
+Voici un exemple concret. Un gros échantillon homogène d'œufs déshydratés est réparti entre six laboratoires différents en vue de la détermination de la teneur en matières grasses dans cet échantillon. Le but de la manœuvre est de déterminer si les laboratoires donnent des résultats consistants entre eux. Les deux techniciens de chaque laboratoire sont libellés `one` et `two`, mais ce sont en fait à chaque fois des techniciens *différents* dans chaque laboratoire[^10-variance-ii-3].
+
+[^10-variance-ii-3]: La variable `Sample` valant `G` ou `H` ne sera pas utilisée ici. En fait, au départ, les initiateurs de l'expérience ont fait croire aux laboratoires qu'il s'agissait de deux échantillons différents alors que c'est le même en réalité.
+
+```{r}
+# Lecture des données eggs depuis le package faraway
+eggs <- read("eggs", package = "faraway")
+# Exploration des données
+skimr::skim(eggs)
+```
+
+Commençons par corriger l'encodage erroné des techniciens qui ferait penser que seulement deux personnes ont travaillé dans l'ensemble des six laboratoires.
+
+```{r}
+# Correction de l'encodage (techniciens imbriqués dans les laboratoires)
+eggs <- smutate(eggs, Technician = interaction(Lab, Technician))
+# Vérification des données
+skimr::skim(eggs)
+```
+
+Nous avons à présent douze techniciens notés `I.one`, `I.two`, `II.one`, `II.two`... Nous pouvons visualiser ces données. Comme nous n'avons que quatre réplicats par technicien, nous nous limitons à la représentation des observations de départ et des moyennes.
+
+```{r nested, fig.cap="Mesures de fractions en matières grasses dans des oeufs dans six laboratoires, par douze techniciens différents. Les points rouges sont les moyennes par technicien."}
+# Graphique de description des données adéquat pour une ANOVA à facteurs hiérarchisés
+chart(data = eggs, Fat ~ Lab %col=% Technician) +
+  geom_jitter(width = 0.05, alpha = 0.5) +
+  stat_summary(geom = "point", fun = "mean", color = "red", size = 3)
+```
+
+Vérifions l'homoscédasticité. Ici, il suffit de considérer la variable `Technician` (une fois correctement encodée !) parce que dans cette forme de modèle, le facteur qui est imbriqué (`Technician`) est celui à partir duquel les résidus sont calculés. Nous utiliserons un seuil $\alpha$ classique de 5% pour l'ensemble de nos tests dans cette étude.
+
+```{r}
+# Test d'homoscédasticité de Bartlett
+bartlett.test(data = eggs, Fat ~ Technician)
+```
+
+Avec une valeur *p* de 23,9%, nous pouvons considérer qu'il y a homoscédasticité. Voilà l'ANOVA réalisée en utilisant la formule pour le modèle hiérarchisé (on dit aussi modèle imbriqué) :
+
+<!-- (utilisez le "snippet" `two-way ANOVA (nested model)` le menu contextuel `hypothesis tests: means` que vous obtenez en tapant `.hm`). -->
+
+```{r, warning=FALSE}
+# ANOVA avec facteur technicien imbriqué dans le facteur laboratoire
+eggs_anova <- lm(data = eggs, Fat ~ Lab + Technician %in% Lab)
+anova(eggs_anova) %>.%
+  tabularise(.)
+```
+
+
+Nous voyons que, dans le cas présent, l'effet technicien ne peut pas être testé. Nous avons l'effet labo à la première ligne et les interactions entre les techniciens et les laboratoires qui sont présentés à la seconde ligne (et les résidus en dernière ligne comme d'habitude). Les deux tests (`Lab` et `Lab:Technician`) sont significatifs ici puisque les valeurs *p* sont toutes les deux inférieures à notre seuil $\alpha$ fixé d'avance à 5%. Nous avons à la fois des différences significatives qui apparaissent entre laboratoires, mais aussi, des variations d'un labo à l'autre entre techniciens (interactions).
+
+Nous devons maintenant vérifier la distribution normale des résidus dans ce modèle (Fig. \@ref(fig:nestedqqplot)). Ici la distribution des résidus est acceptable, toujours considérant que l'ANOVA est relativement robuste vis-à-vis de petits écarts. Dans la partie basse de la distribution, on est bon (un ou deux points un peu éloignés sont relativement habituels sur ce genre de graphique). En partie haute, nous avons un écart qui se marque, mais pas de manière dramatique.
+
+```{r nestedqqplot, echo=FALSE, fig.cap="Graphique quantile-quantile des résidus de l'ANOVA à deux facteurs hiérarchisés pour la variable `Fat` du jeu de données `eggs`."}
+# Graphique quantile-quantile des résidus de notre ANOVA à facteurs hiérarchisés
+chart$qqplot(eggs_anova)
+```
+
+L'effet qui nous intéresse en priorité est l'effet laboratoire. Effectuons des tests "post hoc" sur cet effet pour déterminer quel(s) laboratoire(s) diffèrent entre eux. Le code que nous utilisons habituellement ne fonctionne pas dans le cas d'un modèle hiérarchisé, mais nous pouvons utiliser la fonction `TukeyHSD()` à la place, en partant d'un modèle similaire créé à l'aide de la fonction `aov()`.
+
+```{r}
+# Comparaisons multiples par HSD de Tukey en partant de aov()
+eggs_aov <- aov(data = eggs, Fat ~ Lab + Technician %in% Lab)
+(eggs_posthoc <- TukeyHSD(eggs_aov, "Lab"))
+plot(eggs_posthoc)
+```
+
+Nous pouvons observer des différences significatives au seuil $\alpha$ de 5% entre le labo I et tous les autres laboratoires. Les autres comparaisons n'apparaissent pas significatives, toujours au seuil de 5%.
+
+### Simplification du modèle
+
+```{r anova2simple, echo=FALSE}
+#'
+#' ### Simplification d'une ANOVA à deux facteurs {#anova2simple}
+#'
+```
+
+
+Nous pourrions être tentés de simplifier notre analyse en ne testant *que* l'effet laboratoire. Dans ce cas, nous tomberions dans le piège de la **pseudo-réplication**. Nous pourrions aussi travailler sur la valeur moyenne des mesures pour chaque technicien. Du coup, nous aurions deux valeurs par laboratoire, chaque fois réalisée par un technicien différent. Nous pourrions donc considérer que les données sont indépendantes les unes des autres et nous pourrions réduire le problème à un effet unique, celui du laboratoire.
+
+Si nous n'avons plus que deux mesures par laboratoire au lieu de deux fois quatre, nous gagnons d'un autre côté puisque l'écart type de la moyenne d'un échantillon et l'écart type de la population divisé par la racine carrée de *n*. Donc, l'écart type sur les mesures moyennes est alors deux fois plus faible, ce qui se répercutera de manière positive sur l'ANOVA. Cela pourrait passer. Mais il se peut que la réduction de l'information soit telle que le test perde complètement sa puissance. Illustrons ce phénomène avec le jeu de données `eggs`. Nous créons le jeu de données `eggs_means` reprenant les moyennes des quatre mesures par technicien dans la variable `Fat_mean`.
+
+```{r}
+# Simplification des données
+eggs %>.%
+  sgroup_by(., Technician) %>.%
+  ssummarise(.,
+    Fat_mean = fmean(Fat),
+    Lab      = funique(Lab)) ->
+  eggs_means
+skimr::skim(eggs_means)
+```
+
+```{r}
+# Résumé des données simplifiées
+eggs_means %>.%
+  sgroup_by(., Lab) %>.%
+  ssummarise(.,
+    moyenne  = fmean(Fat_mean),
+    variance = fsd(Fat_mean),
+    n        = fnobs(Fat_mean))
+```
+
+Représentation graphique et vérification de l'homoscédasticité.
+
+```{r}
+# Représentation graphique adéquate de nos données résumées
+chart(eggs_means, Fat_mean ~ Lab) +
+  geom_point() +
+  stat_summary(geom = "point", fun = "mean", color = "red", size = 3)
+```
+
+```{r}
+# Test de Bartlett pour l'homoscédasticité
+bartlett.test(data = eggs_means, Fat_mean ~ Lab)
+```
+
+Notez ceci : le test de Bartlett nous donne une valeur *p* de 6%, donc supérieure au seuil $\alpha$ de 5%. Nous serions donc tentés de considérer qu'il y a homoscédasticité (non rejet de H~0~)... mais avec un regard plus critique, nous gardons à l'esprit que deux mesures par laboratoire, ce n'est vraiment pas beaucoup. Le graphique tend à nous montrer que les écarts entre les deux mesures peuvent varier quand même énormément d'un laboratoire à l'autre. Ici, il faudrait une étude avec plus de mesures pour réellement conclure sur ce test ! Nous pouvons quand même effectuer notre analyse de variance à un facteur.
+
+```{r, warning=FALSE}
+# ANOVA à un facteur sur les données moyennées
+eggs_means_anova <- lm(data = eggs_means, Fat_mean ~ Lab)
+anova(eggs_means_anova) %>.%
+  tabularise(.)
+```
+
+```{r}
+# Graphique quantile-quantile des résidus de notre modèle simplifié
+chart$qqplot(eggs_means_anova)
+```
+
+Nous n'avons plus d'effet significatif, malgré que le labo I obtient, en moyenne, une mesure beaucoup plus forte que les autres. En fait, en réduisant de la sorte nos données, nous avons perdu tellement d'information que le test a perdu toute puissance et n'est plus capable de détecter de manière significative des différences entre moyennes pourtant importantes. Idem pour l'hétéroscédasticité, et le graphique quantile-quantile n'est pas non plus en la faveur de cette analyse.
+
+Si nous avions quatre techniciens par labo qui avaient tous dosé les échantillons deux fois (également huit mesures par laboratoire au total), nous n'aurions pas une perte d'information aussi forte en effectuant quatre moyennes par laboratoire, et l'analyse simplifiée aurait peut-être été utilisable. Il faut voir au cas par cas... Quoi qu'il en soit, le modèle hiérarchisé montre ici qu'il est une alternative intéressant à l'ANOVA à un facteur sur les données simplifiées.
+
+##### Conditions d'application {.unnumbered}
+
+Les conditions d'application sont les mêmes que pour l'ANOVA à deux facteurs sans interactions, sauf qu'ici, les interactions sont bien évidemment incluses dans le modèle par construction.
+
+
+## Effet aléatoire {#effetsaleatoires}
+
+```{r anova2splitplot, echo=FALSE}
+#'
+#' ### ANOVA avec effet aléatoire (split-plot) {#anova2splitplot}
+#'
+```
+
+Jusqu'à présent, nous avons considéré que nous échantillonnons toutes les modalités qui nous intéressent pour les variables facteurs explicatives. Il se peut que les modalités soient trop nombreuses et que nous ne puissions n'en étudier qu'une petite fraction. Nous avons deux possibilités.
+
+-   Soit nous choisissons quelques modalités, et nous les étudions *systématiquement* pour les différentes modalités de l'autre variable. Nous nous ramenons à un modèle à **facteurs fixes**, mais nous ne pouvons donner une réponse que pour les modalités échantillonnées (restriction de la population statistique étudiée). Nous devons en rester bien conscients tout au long de l'analyse et de son interprétation.
+
+-   Soit, nous échantillonnons aléatoirement dans la population un nombre restreint de modalités, et nous restons intéressés par tous les cas possibles. À ce moment-là, la variable facteur doit être traitée comme **aléatoire**.
+
+Considérez un plan d'expérience relativement classique où différents items sont comparés dans une sélection au hasard de réalisations. En agronomie, il peut s'agir de comparer différentes variétés d'une céréale cultivées dans quelques fermes. Si nous ne sommes intéressés que par ces fermes-là, alors les effets sont fixes, pas de problèmes. Par contre, si nous sommes intéressés par la production de cette céréale dans une région donnée, les fermes représentent seulement un *échantillon* de l'ensemble des fermes qui s'y trouvent. Autrement dit, toutes les *modalités possibles* ne sont pas reprises dans l'expérience. Dans ce cas, nous parlerons d'un **effet aléatoire** pour l'effet `ferme`.
+
+Prenons un exemple concret. Dans une analyse réalisée en 1972 par Davies et Goldsmith, six lots différents de pénicilline provenant d'une production de ce médicament sont comparés afin d'estimer la variabilité de l'efficacité antibiotique en fonction du lot de production. La mesure consiste à incuber une bactérie *Bacillus subtilis* dans une série de boites de pétri (variable `plate`). Dans chaque boite, un volume de solution des six lots de pénicilline (variable `sample`) est ajouté. Les six ajouts sont réalisés à espacement régulier, la boite de pétri étant divisée en six "parts de tartes" égales). L'effet de l'antibiotique est mesuré au travers du diamètre de la zone de non-croissance de la bactérie autour du point d'injection (variable `diameter`).
+
+```{r, warning=FALSE}
+# Lecture des données Penicillin depuis le package lme4
+pen <- read("Penicillin", package = "lme4")
+# Premières et dernières lignes du jeu de données
+tabularise$headtail(pen, n = 16)
+```
+
+Étant donné que chacun des six lots d'antibiotiques est testé dans chaque boite de pétri, nous serions tentés de penser que nous avons un plan croisé classique. La fonction `replications()` permet de déterminer rapidement le nombre de réplicats dans un plan d'expérience. Il s'utilise avec les mêmes données et la même formule que celle qu'on utiliserait pour faire l'ANOVA. Ici, nos données sont balancées, donc idéales avec 24 réplicats pour chaque lot (`sample`) et six mesures par boite de pétri (`plate`), mais nous n'avons qu'une seule mesure par lot et par plaque. Cela nous empêche d'étudier les interactions éventuelles (si les boites de pétri sont produites de manière identique et placée au hasard dans un incubateur fournissant un environnement homogène, il y a peu de chances qu'il y ait de telles interactions).
+
+```{r}
+# Détermination du nombre de replicats
+replications(data = pen, diameter ~ sample + plate)
+```
+
+Visualisons ces données. En absence de réplicats pour chaque niveau `plate` par `sample`, le graphique suivant offre une bonne vision d'ensemble des données :
+
+```{r}
+# Visualisation des données
+chart(data = pen, diameter ~ plate | sample) +
+  geom_point()
+```
+
+Sur base du graphique, nous pouvons observer des différences entre lots (le 'F' semble moins efficace, alors que les lots 'A' et 'C' montrent le plus grand diamètre d'action). De plus, des variations d'une boite de pétri à l'autre sont observables. Par exemple, la boite 'g' donne des résultats faibles partout. Si nous considérons `sample` et `plate` comme facteurs fixes, nous serions tentés d'utiliser une ANOVA à deux facteurs classique sans interactions. Ici, nous n'avons pas de test de variance qui prenne simultanément deux facteurs en compte. En absence d'interactions entre les deux facteurs, nous pouvons toujours réaliser deux tests séparés, mais cela reste du domaine du "bidouillage" (nous verrons une meilleure approche via l'analyse des résidus plus loin) :
+
+```{r}
+# Tests de Batlett en fonction de sample et de plate
+bartlett.test(data = pen, diameter ~ sample)
+bartlett.test(data = pen, diameter ~ plate)
+```
+
+Ici, ni le graphique, ni les tests de Bartlett ne montrent une quelconque hétérogénéité des variances. Nous pouvons poursuivre avec l'ANOVA classique...
+
+```{r, warning=FALSE}
+# ANOVA classique à deux facteurs sans interactions
+pen_anova <- lm(data = pen, diameter ~ sample + plate)
+anova(pen_anova) %>.%
+  tabularise(.)
+```
+
+Les deux facteurs sont significatifs au seuil $\alpha$ de 5%. Pour finir, une analyse des résidus confirme que les conditions d'application de l'ANOVA sont rencontrées (les écarts des points à la droite de référence restent dans le domaine de l'acceptable pour ce graphique quantile-quantile des résidus du modèle) :
+
+```{r}
+# Graphique quantile-quantile des résidus du modèle
+chart$qqplot(pen_anova)
+```
+
+Nous pouvons ensuite vérifier visuellement l'égalité des variances (bien mieux que le bricolage avec les deux tests de Bartlett) avec un autre graphique qui permet de visualiser sur l'axe des ordonnées l'étalement des résidus en fonction des valeurs prédites par le modèle (***fitted** values* en anglais) sur l'axe des abscisses. Cet étalement doit être relativement homogène (avec la ligne de tendance qui se rapproche de zéro) comme c'est le cas ici :
+
+<!-- issu du snippet `.mlplot1` ou `... > models > linear > plot residuals versus fitted [chart, broom]` -->
+
+```{r}
+# Graphique des résidus en fonction des valeurs prédites par le modèle
+chart$resfitted(pen_anova)
+```
+
+Au final, les effets `sample` et `plate` apparaissent tous deux significatifs. Mais en considérant l'effet `plate` comme fixe, nous ne pouvons considérer que les résultats pour ces boites de pétri-là, et aucunes autres. Cependant, il est évident que les 24 boites de pétri ont été prises *au hasard* dans le lot de boites disponibles et que nous souhaitons interpréter l'analyse, quelles que soient les boites de pétri utilisées. Ainsi, nous considérerons maintenant l'effet `plate` comme un **effet aléatoire**. Cela signifie que nous considérons une réponse plus générale suivant une distribution normale pour les boites de pétri. Un modèle sans interactions avec un effet aléatoire s'écrit dès lors :
+
+$$y_{ijk} = \mu + \tau1_j + \tau2_k + \epsilon_i \mathrm{\ avec\ } \tau2_k \sim N(0, \sigma_{\tau2}) \mathrm{\ et\ } \epsilon_i \sim N(0, \sigma) $$
+
+L'équation de base du modèle n'a pas changé, mais nous avons maintenant un terme aléatoire supplémentaire, $\tau2_k$ dont il faudra tenir compte dans les calculs. Les hypothèses nulle et alternative pour ce facteur s'écrivent également différemment. Nous n'indiquons plus quelles moyennes de toutes les modalités sont égales (il peut éventuellement y en avoir une infinité possible). Sous $H_0$, l'effet lié aux boites de pétri est nul. Ceci sera obtenu lorsque l'écart type de la distribution normale correspondante ($\sigma_{\tau2}$) est lui-même nul :
+
+-   $H_0: \sigma_{\tau2} = 0$
+-   $H_1: \sigma_{\tau2} > 0$
+
+Dans R, la fonction `lm()` utilisée jusqu'ici ne prend pas en compte les facteurs aléatoires. Il existe plusieurs implémentations différentes, par exemple avec `aov()`, `nlme::lme()` ou encore `lme4::lmer()`/`lmeTest::lmer()`. Ces modèles sont plus compliqués à ajuster, car les spécialistes considèrent que la valeur *p* n'est calculable que dans certains cas bien précis. C'est la raison pour laquelle `lme4::lmer()` calcule le modèle, mais ne renvoie aucune valeur *p*. De plus, chaque fonction utilise une formulation différente et renvoie les résultats différemment. Il est important d'avoir cela en tête, car si vous recherchez de la documentation concernant les modèles à facteurs aléatoires dans R sur Internet, vous risquez de vous perdre dans les différentes implémentations et explications... si ce n'est à considérer que différents points de vue co-existent actuellement !
+
+Dans la suite, nous verrons deux modèles aléatoires particuliers qui ont une configuration permettant un calcul correct des valeurs de *p* : le modèle en parcelles divisées (*split-plot*) et le modèle à mesures répétées.
+
+### Modèle en parcelles divisées (split-plot)
+
+Un des modèles pour lequel les valeurs *p* sont calculables est le modèle dit en [parcelles divisées](https://stat.ethz.ch/education/semesters/as2015/anova/08_Split_Plots.pdf) (*split-plot* en anglais). Cette situation apparaît lorsque, parmi deux facteurs, l'un est plus difficile à diviser en sous-unités *indépendantes*. C'est le cas ici avec nos boites de pétri qui forment chacune un petit microcosme unique. Il est possible de diviser la boite de pétri en sous-régions. C'est ce qui a été fait ici pour tester les six lots, mais ces sous-régions ne **sont pas indépendantes** les unes des autres, elles continuent d'être liées entre elles au sein de la même boite de pétri. Nous pouvons néanmoins considérer la boite de pétri comme facteur aléatoire dans ce modèle split-plot. Dans ce cas, nous avons intérêt à utiliser `lmeTest::lmer()` qui calculera ces valeurs *p* là où elles sont pertinentes[^10-variance-ii-4]. Dans la formule, un facteur aléatoire simple s'écrit `(1 | facteur)`. Il considère un décalage constant pour tous les autres facteurs qui est propre à chaque niveau du facteur aléatoire. Concrètement ici, une boite de pétri donne des résultats globalement meilleurs ou moins bons pour l'ensemble des six lots de pénicilline. Cela donne :
+
+[^10-variance-ii-4]: Notez toutefois qu'il est conseillé de manière générale de **ne pas** utiliser les valeurs *p* du tout, mais de privilégier d'autres approches comme le rapport de la log-vraisemblance entre modèles, voir [ici](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-9450.2010.00852.x), mais cela sort du cadre de ce cours.
+
+```{r}
+# Ajustement du modèle en parcelles divisées avec lmeTest::lmer()
+pen_split_plot <- lmerTest::lmer(data = pen, diameter ~ sample + (1 | plate))
+pen_split_plot
+```
+
+Attention, contrairement à `lm()` qui ajuste automatiquement une ANOVA sur des données qualitatives de type `factor` ou `ordered`, `lmer()` ne fait pas cela et considère toujours un autre modèle : une *régression linéaire*. Nous aborderons ce dernier modèle l'an prochain. Heureusement, la fonction `anova()` peut être appliquée ensuite pour obtenir la table de l'ANOVA :
+
+```{r, warning=FALSE}
+# Tableau ANOVA de notre modèle split-plot
+anova(pen_split_plot) %>.%
+  tabularise(.)
+```
+
+Le titre ("ANOVA de type III avec méthode Satterthwaite") indique que ce n'est pas une ANOVA classique qui a été calculée. Nous n'entrerons pas dans les détails. En tous cas, vous ne voyez qu'une seule ligne dans ce tableau, relative au facteur fixe du modèle, `sample`. L'effet est ici significatif au seuil $\alpha$ de 5%. C'est perturbant. Nous nous attendions à avoir trois lignes comme plus haut (cas à deux facteurs fixes avec `lm()`) et à pouvoir interpréter aussi le facteur `plate` à partir de la table de l'ANOVA. Mais rappelons-nous que `plate` suit maintenant une distribution normale dont nous devons estimer l'écart type $\sigma_{\tau2}$. Cette dernière valeur est indiquée plus haut dans l'impression de l'objet `pen_split_plot`. Retournez voir : nous avons une section `Random effects:` avec un groupe `plate` et en regard, dans la colonne `Std.dev.`, nous avons la valeur de $\sigma_{\tau2}$ qui vaut 0,85. Comment décider si rejeter $H_0$ ou non par rapport à `plate` ? Une façon de faire est de calculer l'intervalle de confiance à (1 - $\alpha$) sur ce paramètre, et de vérifier s'il contient zéro (alors nous ne rejetons pas $H_0$) ou non (nous la rejetons). La fonction `confint()` peut être utilisée pour calculer cet intervalle de confiance. Le calcul est un peu long avec la méthode par défaut, voir `?lme4::confint.merMod` :
+
+```{r}
+# Intervalles de confiance à 95% sur les paramètres du modèle split-plot
+confint(pen_split_plot)
+```
+
+L'intervalle de confiance qui nous intéresse est le premier, nommé `.sig01`. Le reste est relatif à un modèle linéaire que nous étudierons l'an prochain. Ignorons-les pour l'instant. Donc, notre intervalle de confiance va de 0,62 à 1,15. Cela signifie que zéro n'est pas compris dans l'intervalle. Nous rejetons $H_0$ et nous concluons que le facteur `plate` est significatif au seuil $\alpha$ de 5%.
+
+Le travail d'interprétation du facteur aléatoire `plate` est terminé, mais il nous reste à présent à réaliser un test post-hoc de comparaisons multiples sur le facteur fixe `sample` qui est significatif au seuil $\alpha$ de 5% (voir tableau de l'ANOVA plus haut). Cela se réalise de la même façon qu'avec l'ANOVA classique :
+
+<!-- (code issu du snippet `.hmanovamult` ou `... > hypothesis test > means > anova - multiple comparisons [multcomp]`) -->
+
+```{r}
+# Comparaisons multiples HSD de Tukey sur sample de notre modèle split-plot
+summary(pen_posthoc <- confint(multcomp::glht(pen_split_plot,
+  linfct = multcomp::mcp(sample = "Tukey"))))
+oma <- par(oma = c(0, 5.1, 0, 0))
+plot(pen_posthoc)
+par(oma)
+rm(oma)
+```
+
+Ici, tous les lots diffèrent, sauf A-C et E-D. Si la première modalité était une situation de référence, nous aurions aussi pu utiliser la comparaison multiple de Dunnet en remplaçant `"Tukey"` par `"Dunnet"` dans le code ci-dessus. Dans ce cas, toutes les comparaisons deux à deux ne seraient pas réalisées, seulement les comparaisons au témoin, donc à la modalité de référence.
+
+N'oublions pas de réaliser une analyse des résidus de ce modèle pour vérifier que ces derniers ont bien une distribution normale et que les variances sont homogènes (homoscédasticité). Malheureusement, les graphiques `chart()` ne sont pas encore implémentés pour les objets **lmerXXX** et nous devons les calculer "à la main".
+
+```{r}
+# Graphique quantile-quantile du modèle split-plot
+library(broom.mixed) # Required for mixed models
+#chart$qqplot(pen_split_plot) # Not implemented yet
+pen_split_plot %>.%
+  augment(.) %>.%
+  car::qqPlot(.$.resid, distribution = "norm",
+    envelope = 0.95, col = "Black", xlab = "Quantiles théoriques",
+    ylab = "Résidus standardisés")
+```
+
+```{r}
+# Graphique des résidus en fonction des valeurs prédites par le modèle split-plot
+#chart$resfitted(pen_split_plot) # Not implemented yet
+pen_split_plot %>.%
+  augment(.) %>.%
+  chart(., .resid ~ .fitted) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(se = FALSE, method = "loess", formula = y ~ x) +
+  labs(x = "Valeurs prédites", y = "Résidus") +
+  ggtitle("Distribution des résidus - pen_split_plot")
+```
+
+Vous pouvez constater au travers de ces graphiques que les résidus sont les mêmes que pour le modèle fixe. Nous concluons donc, encore une fois, que la distribution des résidus est compatible avec le modèle.
+
+Maintenant, si nous considérons que `sample` est également un facteur aléatoire, car nous avons prélevé six lots au hasard parmi tous les lots produits par la firme pharmaceutique, alors nous devrons utiliser le modèle suivant utilisant **deux facteurs aléatoires** :
+
+$$y_{ijk} = \mu + \tau1_j + \tau2_k + \epsilon_i \mathrm{\ avec\ } \tau1_j \sim N(0, \sigma_{\tau1}) \mathrm{, } \tau2_k \sim N(0, \sigma_{\tau2}) \mathrm{\ et\ } \epsilon_i \sim N(0, \sigma) $$
+
+```{r}
+# Modèle avec deux facteurs aléatoires
+pen_split_plot2 <- lmerTest::lmer(data = pen, diameter ~ (1 | sample) + (1 | plate))
+pen_split_plot2
+```
+
+Inutile d'utiliser `anova()` ici puisqu'il n'y a plus aucun facteur fixe. Nous interprétons les deux facteurs à l'aide de leurs écarts types respectifs calculés comme 0,85 toujours pour `plate` et 1,93 pour `sample`. Calculons les intervalles de confiance sur ces écarts types.
+
+```{r}
+# Intervalles de confiance pour notre modèle avec deux fateurs aléatoires
+confint(pen_split_plot2)
+```
+
+La première ligne `.sig01` est relative à l'écart type `plate` avec un intervalle de confiance qui va de 0,63 à 1,18, et la seconde ligne `.sig02` est relative à l'écart type de `sample` dont l'intervalle de confiance s'étale de 1,10 à 3,56. Dans les deux cas, zéro n'est pas compris dans l'intervalle de confiance et nous rejetons donc $H_0$ au seuil $\alpha$ de 5%. À noter que si nous n'avions pas rejeté l'un des deux, nous aurions pu décider d'ajuster un modèle plus simple à un seul facteur aléatoire `y ~ (1 | fact)` en laissant tomber l'autre facteur dans le modèle simplifié.
+
+L'analyse des résidus (indispensable) n'est pas reproduite ici. Elle reste la même que plus haut (faites là comme exercice).
+
+##### À vous de jouer ! {.unnumbered}
+
+```{r assign_A10Ia_anova2_II, echo=FALSE, results='asis', purl=FALSE}
+if (exists("assignment"))
+  assignment("A10Ia_anova2", part = "II",
+    url = "https://github.com/BioDataScience-Course/A10Ia_anova2",
+    course.ids = c(
+      'S-BIOG-027' = !"A10Ia-{YY}M-anova2"),
+    course.urls = c(
+      'S-BIOG-027' = !"{assign_url$A10Ia_anova2}"),
+    course.starts = c(
+      'S-BIOG-027' = !"{class1_start(mod, 'A10')}"),
+    course.ends = c(
+      'S-BIOG-027' = !"{n3_end(mod, 'A10')}"),
+    term = "Q2", level = 3,
+    toc = "ANOVA 2 facteurs, part II")
+```
+
+### Modèle à mesures répétées
+
+```{r anova2rep, echo=FALSE}
+#'
+#' ### ANOVA avec effet aléatoire (mesures répétées) {#anova2rep}
+#'
+```
+
+Un autre type de modèle aléatoire courant est le modèle à mesures répétées. Celui-ci se produit lorsque nous mesurons plusieurs fois les mêmes individus, par exemple, successivement dans le temps. Considérons l'expérience suivante. Dix-huit volontaires (variable `Subject`) ont subi une privation de sommeil (restreint à 3h par 24h) pendant neuf jours (variable `Days`). Au jour zéro, ils ont eu un sommeil normal. Leur temps de réaction est mesuré en millisecondes à l'aide d'un test standardisé.
+
+```{r}
+# Lecture des données sleep du package lme4
+sleep <- read("sleepstudy", package = "lme4")
+sleep
+```
+
+```{r}
+# Exploration des données
+skimr::skim(sleep)
+```
+
+Un graphique pertinent ici relie les points relatifs aux tests de chaque patient afin de bien montrer le lien entre les mesures issues des mêmes sujets, soit un graphique de ce type :
+
+```{r}
+# Graphique adéquat pour visualiser des données pour modèles à mesures répétées
+chart(data = sleep, reaction ~ days %col=% subject) +
+  geom_line()
+```
+
+Nous pouvons aussi utiliser des facettes si ce graphique est trop encombré :
+
+```{r}
+# Autre graphique adéquat avec des facettes
+chart(data = sleep, reaction ~ days | subject) +
+  geom_line()
+```
+
+Comme nous pouvons nous y attendre, le temps de réaction semble augmenter en fonction de la privation de sommeil, mais un effet individuel est possible. Attention : résistez à la tentation de représenter ici les valeurs moyennes par jour de temps de réaction. Il est important de conserver la continuité temporelle individu par individu sur le graphique en reliant les points relatifs à chaque patient comme ci-dessus.
+
+Nous pouvons, par contre, faire la supposition que la variation du temps de réaction soit linéaire, et le représenter graphiquement comme suit :
+
+```{r}
+# Graphique à facette avec représentation d'une tendance linéaire
+chart(data = sleep, reaction ~ days | subject) +
+  geom_point() +
+  stat_smooth(method = "lm") # Ajuste une droite sur les données
+```
+
+C'est ce dernier modèle que nous allons considérer. Contrairement au modèle split-plot précédent, notez que les facteurs ne sont pas croisés ici, mais les mesures répétées dans le temps sont **imbriquées** dans la variable `Subject`. Nous avons, en quelque sorte, un modèle qui est à la fois hiérarchisé et mixte, donc, contenant un facteur fixe `Days` et un facteur aléatoire `Subject`. Le modèle correspondant est :
+
+$$y_{ijk} = \mu + \tau1_j + \tau2_k(\tau1_j) + \epsilon_i \mathrm{\ avec\ } \tau2_k \sim N(0, \sigma_{\tau2}) \mathrm{\ et\ } \epsilon_i \sim N(0, \sigma) $$
+
+Avec `lmerTest::lmer()`, cela donne (notez la formulation particulière `(fact1 | fact 2)` pour marquer l'imbrication) :
+
+```{r}
+# Modèle à mesurées répétées avec lmerTest::lmer()
+sleep_rep <- lmerTest::lmer(data = sleep, reaction ~ days + (days | subject))
+sleep_rep
+```
+
+```{r, warning=FALSE}
+# Tableau de l'ANOVA de notre modèle à mesures répétées
+anova(sleep_rep) %>.%
+  tabularise(.)
+```
+
+L'effet des jours (`days`) est significatif au seuil $\alpha$ de 5%. En réalité, comme nous l'avons déjà fait remarqué, il est plus judicieux de considérer une évolution linéaire au fil des jours de la vitesse de réaction. Nous résisterons donc à l'envie d'effectuer un test post-hoc deux à deux des jours, ce qui n'a pas de sens ici. La fonction `summary()` nous donne l'équation de la droite `Reaction = a + b * days` :
+
+```{r}
+# Résumé du modèle
+summary(sleep_rep)
+```
+
+En lisant dans le sous-tableau `Fixed effects:`, nous avons `a` = 251,4 et `b` = 10,5 dans la colonne `Estimate` en regard de `(Intercept)` et `days`, soit ordonnée à l'origine en anglais et pente relative à la variable `days`. Cela donne l'équation suivante : Réaction = 251,4 + 10,5 \* days. Le temps de réaction moyen au jour zéro est de 251 ms, et l'augmentation est de 10,5 ms par jour, toujours en moyenne (mais nous anticipons ici sur ce qu'on appelle un modèle linéaire que nous étudierons plus en détail au cours de SDD II l'an prochain).
+
+Afin de déterminer si les variations entre sujets sont significatives, nous calculons les intervalles de confiance :
+
+```{r}
+# Intervalles de confiance à 95% sur les paramètres du modèle à mesures répétées
+confint(sleep_rep)
+```
+
+L'intervalle `.sig01` se rapporte à l'écart type pour le temps de réaction au jour zéro. Cet écart type est de 24,7 et son intervalle de confiance s'étale de 14,4 à 37,7. Puisque zéro n'est pas compris dans l'intervalle de confiance, la variation est donc significative au seuil $\alpha$ de 5%. Nous ne discuterons pas les autres termes pour l'instant qui se rapportent au modèle linéaire.
+
+L'analyse des résidus donne ceci :
+
+```{r, warning=FALSE}
+# Graphique quantile-quantile des résidus du modèle à mesures répétées
+library(broom.mixed) # Required for mixed models
+#chart$qqplot(sleep_rep) # Not implemented yet
+sleep_rep %>.%
+  augment(.) %>.%
+  car::qqPlot(.$.resid, distribution = "norm",
+    envelope = 0.95, col = "Black", xlab = "Quantiles théoriques",
+    ylab = "Résidus standardisés")
+```
+
+```{r}
+# Distribution des résidus du modèle à mesures répétées par les valeurs prédites
+#chart$resfitted(sleep_rep) # Not implemented yet
+sleep_rep %>.%
+  augment(.) %>.%
+  chart(., .resid ~ .fitted) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(se = FALSE, method = "loess", formula = y ~ x) +
+  labs(x = "Valeurs prédites", y = "Résidus") +
+  ggtitle("Distribution des résidus - pen_split_plot")
+```
+
+Nous avons quelques valeurs extrêmes qui étaient déjà repérables sur les graphiques des données brutes. Il s'agit peut-être de mesures erronées (pour le confirmer, il faudrait retourner voir dans les cahiers de laboratoires), mais à part cela, la distribution des résidus est correcte.
+
+```{block, type='note', purl=FALSE}
+Le modèle utilisé ici considère une variation du temps de réaction identique pour tous les sujets. L'inspection visuelle des données brutes montre que ce n'est peut-être pas le cas. Un modèle plus complexe permet de varier aussi ce paramètre. Il sort du cadre de ce cours, mais vous pouvez lire le développement complet expliqué par un des auteurs de la fonction `lmer()` [ici](http://lme4.r-forge.r-project.org/slides/2010-09-23-Rahway/4Longitudinal.pdf). Au passage, il s'agit d'un excellent exemple de comparaison de deux modèles autrement qu'au travers des valeurs *p*, soit une approche maintenant préconisée mais malheureusement pas encore largement intégrée dans la pratique en biologie.
+```
+
+##### Conditions d'application {.unnumbered}
+
+Pour tous les modèles contenant un ou plusieurs effets aléatoires, les conditions générales de l'ANOVA restent de mise :
+
+-   échantillon représentatif (par exemple, aléatoire),
+-   observations indépendantes,
+-   variable **réponse** quantitative,
+-   *n* variables **explicatives** qualitatives à deux niveaux ou plus,
+-   distribution **normale** des résidus $\epsilon_i$,
+-   **homoscédasticité** (mêmes variances intragroupes),
+
+De plus, nous faisons l'hypothèse supplémentaire que les variables à effet aléatoire suivent une distribution normale, mais nous ne pouvons pas facilement tester cette hypothèse à moins d'avoir un grand nombre de niveaux pour la variable en question dans notre échantillon, ce qui est très rarement le cas.
+
+Dans tous les cas, une analyse des résidus, en particulier un graphique quantile-quantile et un graphique des résidus par rapport aux valeurs ajustées sont indispensables pour confirmer que les conditions d'application sont rencontrées. Si ce n'est pas le cas, nous pouvons tenter de transformer les données. Sinon, nous devons utiliser une version non paramétrique du modèle si elle existe (p. ex., [test de Friedman](https://www.datanovia.com/en/fr/lessons/test-de-friedman-dans-r/)), mais ce n'est pas toujours possible.
+
+##### À vous de jouer ! {.unnumbered}
+
+`r learnr("A10Lb_anova2mixte", title = "ANOVA à 2 facteurs mixte", toc = "Analyse de variance à 2 facteurs mixte")`
+
+##### Pour aller plus loin {.unnumbered}
+
+-   On s'y perd facilement dans les différents modèles et les formulations associées pour le code R avec `lm()`, `aov()` ou `lmer()`. Un récapitulatif (en anglais) est présenté [ici](http://conjugateprior.org/2013/01/formulae-in-r-anova/). Une version plus détaillée est [aussi disponible](http://www.dwoll.de/rexrepos/posts/anovaMixed.html).
+
+-   Dans le cas où les conditions d'application de l'ANOVA à mesures répétées ne sont pas rencontrées, nous pouvons utiliser un test non paramétrique équivalent : le [**test de Friedman**](https://www.datanovia.com/en/fr/lessons/test-de-friedman-dans-r/).
+
+## Syntaxe de R
+
+```{r syntaxr, echo=FALSE}
+#'
+#' ### Syntaxe de R {#syntaxr}
+#'
+```
+
+```{block, type='info', purl=FALSE}
+
+Dans cette dernière section du module 10, nous revenons sur nos outils logiciels. C'est bien de connaître les techniques de visualisation et d'analyse des données, mais c'est encore mieux de pouvoir les appliquer en pratique... et pour cela il faut maîtriser un ou plusieurs logiciels. Nous avons utilisé principalement **[R](https://www.r-project.org)**, avec l'interface proposée par RStudio. Nous allons maintenant approfondir quelque peu nos connaissances en R.
+
+```
+
+Vous avez pu vous rendre compte que R n'est pas qu'un logiciel de science des données. Il comprend également un **langage informatique** du même nom[^10-variance-ii-5] dédié à la manipulation, la visualisation et l'analyse des données.
+
+[^10-variance-ii-5]: Historiquement, ce langage s'appelait **S** à l'origine dans les années 1970 alors qu'il a été inventé par John Chambers et ses collègues aux laboratoires Bell. R est une implémentation open source de S écrite dans les années 1990 par Ross Ihaka et Robert Gentleman. Ensuite R a pris de l'importance à tel point qu'on parle maintenant du langage R (sachant bien qu'il s'agit d'un *dialecte* du langage S).
+
+Les langages informatiques sont, pour la plupart, conçus autour de standards bien définis. Mais R est toujours resté volontairement très libertaire à ce niveau. Comme R permet également de presque tout redéfinir dans son langage, il est apparu au cours du temps différents styles. Ces styles co-existent et co-existeront encore longtemps, car ils ont tous des avantages et des inconvénients, ce qui mène à des choix personnels de chaque utilisateur dictés par l'usage qu'il fait de R, ses goûts, son caractère, et comment il a été formé (à quelle "école" il appartient). Nous n'entrerons pas dans les débats stériles autant que passionnés autour de ces questions de styles. Il est cependant utile de comprendre ces différentes approches au moins dans leurs grandes lignes.
+
+Aujourd'hui, on peut distinguer principalement trois styles dans R, [résumés dans un aide-mémoire](http://www.amelia.mn/Syntax-cheatsheet.pdf) :
+
+-   La **syntaxe de base** ou **syntaxe dollar** est celle héritée du langage S. Elle fait la part belle aux instructions d'indiçage comme `v[i]` ou `df[i, j]`, et à l'opérateur dollar `$` pour extraire, par exemple la variable `x` du data frame `df` à l'aide de `df$x`, d'où son nom. Une instruction type en R de base sera `fun(df$x, df$y)`. L'objet R central pour les statistiques est le **data.frame** qui est conçu pour contenir un tableau de données de type cas par variables.
+
+-   La **syntaxe formule** qui utilise une formule (objet ressemblant à une équation mathématique et utilisant le "tilde" `~` pour séparer le membre de gauche et le membre de droite). Nous avons utilisé des formules dans le cadre de graphiques réalisés à l'aide de `chart()` ou pour nos ANOVAs, par exemple. Une instruction se présente typiquement comme `fun(y ~ x, data = df)`, même si nous préférons dans SciViews::R inverser les deux arguments et écrire `fun(data = df, y ~ x)`. La syntaxe formule est souvent associée également à un **data.frame** (l'argument `data =`), même si une liste, un **tibble** (voir ci-dessous) ou tout autre objet similaire (comme un **data.table**) peut aussi souvent être utilisé.
+
+-   La **syntaxe "tidyverse"** qui vise à produire des instructions aussi lisibles que possible (lecture proche d'un langage naturel humain). Cette syntaxe utilise quelques astuces de programmation pour rendre les instructions plus digestes et s'affranchir du `df$x` pour pouvoir écrire uniquement `x` à la place. Elle fait également la part belle au chaînage des instructions (opérateur de "pipe") que nous avons étudié à la fin du module \@ref(import). Une instruction type sera `df %>% fun(x, y)`, même si dans SciViews::R nous préférons l'opérateur plus explicite `%>.%` qui donne `df %>.% fun(., x, y)`. [Tidyverse](https://www.tidyverse.org) est constitué d'un ensemble de packages R qui se conforment à un style bien défini autour d'une version spéciale de data frame appelée **tibble**.
+
+Dans le cadre de ce cours, nous utilisons un style propre à SciViews::R Il est associé à une série de packages chargés à partir de l'instruction `SciViews::R`. Ce style tente de rendre l'utilisation de R plus cohérente et plus facile en reprenant le meilleur des trois styles précédents, et en y ajoutant une touche personnelle élaborée pour éliminer autant que possible les erreurs fréquentes observées lors de l'apprentissage ou de l'utilisation de R. Dans la suite de cette section, nous allons comparer quelques instructions équivalentes, mais rédigées dans différents styles pour nous familiariser avec eux et pour comprendre leurs atouts respectifs. Assurez-vous de conserver à proximité l'[aide-mémoire sur les différentes syntaxes de R](http://www.amelia.mn/Syntax-cheatsheet.pdf) pour vous aider. Mais avant toute chose, un petit complément concernant l'indiçage dans R est nécessaire.
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(115, "A10Hf_syntaxe", height = 400, toc = "Trois principales syntaxes")`
+
+### Indiçage dans R
+
+Après l'opérateur particulier `<-` d'*assignation* (associer une valeur à un nom dans un langage informatique), les diverses variantes de l'indiçage de vecteurs, matrices et data frames sont caractéristiques de R. Elles sont puissantes, mais nécessitent de s'y attarder un peu pour bien les comprendre.
+
+Les données et les calculs dans R sont **vectorisés**. Cela signifie que l'objet de base est un vecteur. Un vecteur est un ensemble d'éléments rangés dans un ordre bien défini, et éventuellement nommés. La longueur du vecteur s'obtient avec `length()`, et il est possible de spécifier un ou plusieurs éléments du vecteur à l'aide de l'opérateur `[]`.
+
+```{r}
+# Un vecteur contenant 4 valeurs numériques nommées a, b, c et d
+v <- c(a = 2.6, b = 7.1, c = 4.9, d = 5.0)
+# Le second élément du vecteur
+v[2]
+# Le premier et le troisième élément
+v[c(1, 3)]
+# Les 3 premiers éléments avec la séquence 1, 2, 3 issue de 1:3
+v[1:3]
+```
+
+Nous venons d'indicer notre vecteur `v` à l'aide de la première forme possible qui consiste à utiliser des entiers positifs pour indiquer la position des éléments que nous souhaitons retenir.
+
+La seconde forme utilise des entiers négatifs pour **éliminer** les vecteurs aux positions correspondantes.
+
+```{r}
+# Tout le vecteur v, sauf le 2ème élément
+v[-2]
+# Élimination du 2ème et du 3ème élément
+v[-(2:3)]
+# Élimination du dernier élément
+v[-length(v)]
+```
+
+La troisième forme d'indiçage nécessite que le vecteur soit nommé, comme c'est le cas pour `v`. Nous pouvons alors indicer en utilisant des chaînes de caractères correspondant aux noms des différents éléments.
+
+```{r}
+# Élément de v s'appelant 'a'
+v['a']
+# Les éléments 'b' et 'd'
+v[c('b', 'd')]
+```
+
+Enfin, la quatrième forme d'indiçage utilise un vecteur booléen (`TRUE` ou `FALSE` ; on dit **logical** en R) de même longueur que le vecteur, sinon les valeurs sont recyclées à concurrence de la longueur du vecteur. On ne garde que les éléments correspondants à `TRUE`.
+
+```{r}
+# Garder le premier et le quatrième élément
+v[c(TRUE, FALSE, FALSE, TRUE)]
+# Garder le premier et le troisième (recyclage des indices une seconde fois)
+v[c(TRUE, FALSE)]
+```
+
+La dernière instruction mérite une petite explication supplémentaire. Le vecteur **logical** d'indiçage utilisé ne contient que deux éléments alors que le vecteur `v` qui est indicé en contient quatre. Les valeurs logiques sont alors recyclées comme suit. Lorsqu'on arrive la fin, on reprend au début. Donc, `TRUE`, on garde le premier, `FALSE` on élimine le second, et puis... retour au début : `TRUE` on garde le troisième, `FALSE` on jette le quatrième, et ainsi de suite si `v` était plus long. Donc, un indiçage avec `c(TRUE, FALSE)` permet de ne garder que les éléments ayant une position impaire dans le vecteur quel que soit la longueur de `v`, et `c(FALSE, TRUE)` ne gardera que les éléments en position paire.
+
+La puissance de l'indiçage par valeur booléenne est immense, car nous pouvons aussi utiliser une expression qui renvoie de telles valeurs. C'est le cas notamment de toutes les instructions de comparaison (opérateurs égal à `==`, différent de `!=`, plus grand que `>`, plus petit que `<`, plus grand ou égal `>=` ou plus petit ou égal `<=`). Par exemple pour ne garder que les valeurs plus grandes que 3, on fera :
+
+```{r}
+# Déterminer quel élément est plus grand que 3 dans v
+v > 3
+# Utilisation de cette instruction comme indiçage pour filtrer les éléments de v
+v[v > 3]
+```
+
+Les instructions de comparaison peuvent être combinées entre elles à l'aide des opérateurs "et" (`&`) ou "ou" (`|`). Donc, pour récupérer les éléments qui sont plus grands que 3 **et** plus petits ou égaux à 5, on fera :
+
+```{r}
+# Filtrage d'un vecteur en R de base
+v[v > 3 & v <= 5]
+```
+
+Les indiçages fonctionnent aussi pour des objets bi- or multidimensionnels. Dans ce cas, nous utiliserons deux ou plusieurs instructions d'indiçage à l'intérieur des `[]`, séparées par un virgule. Pour un tableau à deux dimensions comme une matrice ou un data frame, le premier élément sélectionne les lignes et le second les colonnes.
+
+```{r}
+# Création d'un data frame
+df <- dtx_rows(
+  ~x, ~y, ~z,
+   1,  2,  3,
+   4,  5,  6
+)
+df
+```
+
+```{r}
+# Élément à la première ligne, colonnes 2 et 3
+df[1, 2:3]
+```
+
+Pour conserver toutes les lignes et/ou toutes les colonnes, il suffit de laisser la position correspondante vide.
+
+```{r}
+# Toute la seconde ligne
+df[2, ]
+# Toute la seconde colonne
+df[ , 2]
+# Tout le tableau (pas très utile !)
+df[ , ]
+```
+
+Les autres formes d'indiçage fonctionnent aussi.
+
+```{r}
+# Lignes pour lesquelles x est plus grand que 3 et colonnes nommée 'y' et 'z'
+df[df$x > 3, c('y', 'z')]
+```
+
+Notez bien que nous n'avons pas écrit, `df[x > 3, ]` mais `df[df$x > 3, ]`. La première forme n'aurait pas utilisé la variable `x` du data frame `df` (notée `df$x`), mais aurait tenté d'utiliser un vecteur `x` directement. Ce qui nous amène à l'extraction d'un élément d'un tableau ou d'une liste à l'aide des opérateurs `[[]]` ou `$`. Pour extraire la colonne `y` sous *forme d'un vecteur* de `df`, nous pourrons faire :
+
+```{r}
+# Récupération d'une colonne d'un data frame
+df[[2]]
+df[['y']]
+df$y
+```
+
+Pour finir, l'indiçage peut aussi être réalisé à la gauche de l'opérateur d'assignation `<-`. Dans ce cas, la partie concernée du vecteur, de la matrice ou du data frame est remplacée par la ou les valeurs de droite.
+
+```{r}
+# Remplacer la troisième colonne par des nouvelles valeurs
+df[ , 3] <- c(-10, -15)
+df
+# Ceci donne le même résultat
+df$z <- c(-10, -15)
+df
+```
+
+Maintenant que nous sommes familiarisés avec les différents modes d'indiçage dans R de base, nous pouvons les comparer à d'autres styles.
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(119, "A10Hg_indices", height = 400, toc = "Indiçage dans R")`
+
+### Comparaison de styles
+
+Nous allons réaliser quelques opérations simples sur un jeu de données cas par variables. Nous allons créer un tableau de contingence à une entrée, sélectionner des cas et restreindre les variables du tableau, calculer une nouvelle variable, pour finir avec une représentation graphique simple. Nous ferons le même travail en utilisant les différents styles de R à des fins de comparaison.
+
+Prenons le jeu de données `zooplankton` qui contient 19 mesures (variables numériques) effectuées sur des images de zooplancton, ainsi que le groupe taxonomique auquel les organismes appartiennent (variable facteur `class`). Nous avons toujours utilisé la fonction `read()` pour charger ce type de données. Cette fonction fait partie de `SciViews::R`.
+
+```{r}
+# Dialecte SciViews::R pour lire un jeu de données cas par variables
+SciViews::R
+# Lecture des données zooplankton
+zoo <- read("zooplankton", package = "data.io", lang = "FR")
+# Exploration des données
+skimr::skim(zoo)
+```
+
+Voici comment se distribuent les organismes en fonction de `class`, en utilisant la syntaxe de base :
+
+```{r}
+# Tableau de contingence en R de base
+table(zoo$class)
+```
+
+La fonction `table()` crée un objet du même nom qui se comporte de manière différente d'un data frame. Ainsi, l'impression de l'objet se présente comme un ensemble de valeurs nommées par le niveau dénombré pour un tableau de contingence à une seule entrée.
+
+Si vous voulez réaliser la même opération à l'aide d'une formule, vous pouvez utiliser la fonction `tally()` depuis le package {mosaic}. Vous pouvez charger ce package à l'aide de l'instruction `library(mosaic)`, et ensuite utiliser `tally()` comme si de rien n'était, ou alors vous spécifiez complètement la fonction à l'aide de `mosaic::tally()` (littéralement, "la fonction `tally()` du package {mosaic}"). Cette dernière approche est favorisée par SciViews::R, car elle permet de comprendre immédiatement d'où vient la fonction et d'éviter aussi d'appeler malencontreusement une fonction du même nom qui serait définie dans un autre package.
+
+```{r}
+# Tbleau de contingence avec interface formule
+mosaic::tally(data = zoo, ~ class)
+```
+
+Tidyverse favorise l'assemblage d'un petit nombre de fonctions (des "verbes") pour obtenir les mêmes résultats que des fonctions plus spécialisées dans les autres styles. Ainsi, ses instructions seront souvent plus verbeuses (inconvénient), mais aussi beaucoup plus lisibles et compréhensibles par un humain (immense avantage). La réalisation d'un tableau de contingence consiste en fait à regrouper les données en fonction de la variable `class`, et ensuite à compter (contingenter) les observations dans chaque classe. Nous pouvons écrire une instruction qui réalise exactement ce traitement de manière explicite (sachant que la fonction `n()` sert à dénombrer) :
+
+```{r}
+# Tableau de contingence en syntaxe Tidyverse
+zoo %>%
+  group_by(class) %>%
+  summarise(n())
+```
+
+Attention : rappelez-vous ici que `group_by_()` et `summarise_()` ne sont pas compatibles avec `n()` (vous devez utilise `fn()` ou `fnobs()` selon que vous vouliez compter tous les cas ou seulement ceux hors valeurs manquantes).
+
+Nous obtenons un objet *tibble*, et non pas un objet spécifique au traitement réalisé. C'est dans la philosophie de Tidyverse que d'utiliser et réutiliser autant que possible un *tibble* qui permet de contenir des données "bien rangées" (ou *"tidy data"* en anglais, d'où le nom de ce style, **tidy**verse pour "univers bien rangé").
+
+Comme contingenter des observations est une opération fréquente, il existe *exceptionnellement* une fonction dédiée qui fait le travail en une seule opération : `count()`.
+
+```{r}
+# Fonction Tidyverse spécialisée pour le contingentement
+count(zoo, class)
+```
+
+Le résultat est le même. Comparons maintenant la fonction `table()` de base et `count()` de tidyverse du point de vue des arguments. `table()` prends un vecteur comme argument. À nous de l'extraire du data frame à l'aide de `zoo$class`, ce qui donne `table(zoo$class)`. Par contre, `count()` comme toute fonction tidyverse qui se respecte, prend comme premier argument un **tibble**, un **data.table** ou un **data.frame**, bref un tableau cas par variables. C'est ensuite au niveau du second argument que l'on spécifie la variable que nous souhaitons utiliser à partir de ce tableau. Ici, plus besoin d'indiquer que c'est une variable qui vient du tableau `zoo`, car `count()` le sait déjà. Bien que ce ne soit pas évident au premier coup d'œil, `count()` ne respecte *pas* la syntaxe de base de R et évalue `class` de manière particulière[^10-variance-ii-6]. Au final, l'appel à `table()` nécessite de comprendre ce que fait l'opérateur `$`. Au contraire, l'instruction tidyverse `count(zoo, class)` se lit et se comprend très bien presque comme si c'était écrit en anglais. Vous lisez en effet "compte dans zoo la classe" (avantage), mais le coût en est une évaluation non standard de ses arguments (inconvénient qui ne peut pas apparaître à ce stade, mais que vous constaterez plus tard quand vous ferez des choses plus évoluées avec ces instructions, par exemple, en les incluant dans une fonction, et puis dans un package R).
+
+[^10-variance-ii-6]: Cette évaluation particulière s'appelle le *"tidyeval"*. Son explication est hors de propos dans cette introduction à la science des données, mais si vous êtes curieux, vous pouvez toujours [lire ceci](https://thinkr.fr/tidyeval/).
+
+```{block, type='note', purl=FALSE}
+Le style de SciViews::R accepte à la fois la syntaxe de base et celle de Tidyverse, avec une préférence pour cette dernière lorsque la lisibilité des instructions est primordiale. Il propose même sa propre version des fonctions "tidy", sous forme de fonctions "svTidy" dont le nom termine par '_' est sont souvent plus rapides. De plus, le style formule est également abondamment utilisé dès qu'il s'agit de réaliser un graphique ou un modèle statistique (les deux étant d'ailleurs souvent associés).
+```
+
+Bien. Admettons maintenant que nous voulons représenter la forme (ratio d'aspect, rapport largeur / longueur) des œufs en fonction de leur taille sur un graphique (en utilisant les variables `aspect` et `area`) présents dans notre échantillon de zooplancton. Deux niveaux de la variable `class` les contiennent : `"Oeuf_allongé"` et `"Oeuf_rond"`. Nous voulons donc filtrer les données du tableau `zoo` pour ne garder que ces deux catégories, et éventuellement, nous voulons aussi restreindre le tableau aux trois variables `aspect`, `area` et `class` puisque nous n'avons pas besoin des autres variables. En R de base cela peut se faire en une seule étape à l'aide de l'opérateur d'indiçage `[]` comme nous avons vu plus haut.
+
+```{r}
+# Filtrage de lignes et sélection de colonnes avec [,] en R de base
+zoo2 <- zoo[zoo$class == "Oeuf_allongé" | zoo$class == "Oeuf_rond",
+  c("aspect", "area", "class")]
+zoo2
+```
+
+En tidyverse, les deux opérations (filtrage des lignes et sélection des variables en colonnes) restent deux opérations successives distinctes dans le code. Notez au passage que nous repassons à l'opérateur de chaînage `%>.%` de SciViews::R que nous avons l'habitude d'utiliser à la place de l'opérateur correspondant de tidyverse `%>%`.
+
+```{r}
+# Filtrage de lignes et sélection de colonnes avec le Tidyverse
+zoo %>.%
+  dplyr::filter(., class == "Oeuf_allongé" | class == "Oeuf_rond") %>.%
+  dplyr::select(., aspect, area, class) ->
+  zoo2
+zoo2
+```
+
+Notez que nous avons précisé ici `dplyr::filter()` et `dplyr::select()` pour éviter toute confusion avec d'autres fonctions de même nom, c'est-à-dire, `stats::filter()` et `MASS::select()` respectivement, qui réalisent tout autre chose ! Si vous avez bien utilisé l'instruction `SciViews::R` en début de traitement, ceci n'est pas nécessaire car SciViews s'est arrangé pour donner la priorité aux version du package {dplyr} dans les deux cas.
+
+Le résultat est le même qu'avec le code R de base, mais la syntaxe est très différente. Notez que les variables dans la syntaxe de base sont complètement qualifiées (`zoo$class`), ce qui nécessite de répéter plusieurs fois le nom du jeu de données `zoo` (inconvénient), mais lève toute ambiguïté (avantage). La version de tidyverse est plus "propre" (avantage), mais cela implique d'utiliser une évaluation non standard de `class` qui n'est pas une variable existante dans l'environnement où le code est évalué (inconvénient). La sélection des variables est également différente. Dans R de base, des chaînes de caractères doivent être compilées dans un vecteur d'indiçage à l'aide de `c()`, alors que `select()` de tidyverse permet de spécifier simplement les noms des variables sans autres fioritures (mais cela doit être évalué de manière non standard, encore une fois).
+
+##### À vous de jouer ! {.unnumbered}
+
+`r h5p(114, "A10Hh_select", height = 400, toc = "Sélection de variables")`
+
+Pour calculer une nouvelle variable, par exemple le logarithme en base 10 de l'aire dans `log_area`, nous ferons comme ceci en R de base :
+
+```{r}
+# Calcul d'une nouvelle variable en R de base
+zoo2$log_area <- log10(zoo2$area)
+head(zoo2)
+```
+
+Avec tidyverse, nous savons déjà que `mutate()` est le verbe à employer pour cette opération.
+
+```{r}
+# Calcul d'une nouvelle variable avec mutate() du Tidyverse
+zoo2 <- mutate(zoo2, log_area = log10(area))
+head(zoo2)
+```
+
+Vous pouvez aussi utiliser la fonction "svTidy" `mutate_()` de `SciViews::R` bien sûr :
+
+```{r}
+zoo2 <- mutate_(zoo2, log_area = ~log10(area))
+head(zoo2)
+```
+
+En résumé, la syntaxe de Tidyverse se lit mieux et est plus propre (avantage), mais elle nécessite pour y arriver une évaluation non standard de `area`, ce qui est un inconvénient par rapport à la syntaxe R de base.
+
+Pour finir, revenons sur les différents moteurs graphiques pour faire un nuage de points en utilisant différents styles. Une petite précaution supplémentaire est nécessaire. Pour `class`, nous devons préalablement laisser tomber les niveaux non utilisés à l'aide de `droplevels()`.
+
+```{r}
+# Tous les niveaux sont toujours là
+levels(zoo2$class)
+# Ne retenir que les niveaux relatifs aux œufs
+zoo2$class <- droplevels(zoo2$class)
+# C'est mieux !
+levels(zoo2$class)
+```
+
+Voici un graphe de base... avec également la syntaxe de base :
+
+```{r}
+# Graphique en R de base
+plot(zoo2$log_area, zoo2$aspect, col = zoo2$class)
+legend("bottomright", legend = c("Oeuf allongé", "Oeuf rond"), col = 1:2, pch = 1)
+```
+
+Le même graphique, mais en utilisant l'interface formule alternative avec `plot()` :
+
+```{r}
+# Idem, mais avec interface formule
+plot(data = zoo2, aspect ~ log_area, col = class)
+legend("bottomright", legend = c("Oeuf allongé", "Oeuf rond"), col = 1:2, pch = 1)
+```
+
+L'interface formule est également employée avec le moteur {lattice} via la fonction `xyplot()`. Ici, nous utilisons la version `chart()` en appelant `chart$xyplot()`.
+
+```{r, warning=FALSE}
+# Graphique lattice (xyplot) à partir de chart()
+chart$xyplot(data = zoo2, aspect ~ log_area, groups = zoo2$class, auto.key = TRUE)
+```
+
+Dans tidyverse, c'est le moteur graphique {ggplot2} qui est utilisé, avec sa syntaxe propre :
+
+```{r}
+# Graphique ggplot2 (Tidyverse)
+ggplot(data = zoo2, aes(x = log_area, y = aspect, col = class)) +
+  geom_point()
+```
+
+Dans SciViews::R, `chart()` utilise aussi par défaut le moteur graphique {ggplot2}, mais il est plus flexible et permet soit d'utiliser `aes()` comme `ggplot()`, soit une interface formule élargie (c'est-à-dire qu'il est possible d'y inclure d'autres "aesthetics" à l'aide des opérateurs `%aes=%`) :
+
+```{r}
+# chart() avec aes() 
+chart(data = zoo2, aes(x = log_area, y = aspect, col = class)) +
+  geom_point()
+```
+
+```{r}
+# chart() avec une formule élargie
+chart(data = zoo2, aspect ~ log_area %col=% class) +
+  geom_point()
+```
+
+Il y aurait encore beaucoup à dire sur les différents styles de syntaxe dans R, mais nous venons de discuter les éléments essentiels. SciViews::R propose d'utiliser un ensemble cohérent d'instructions qui est soigneusement choisi pour rendre l'utilisation de R plus facile (sur base de nos observations des difficultés et erreurs d'apprentissage principales). Il se base sur tidyverse avec une pincée de R de base et une bonne dose de formules là où elles se montrent utiles. Des fonctions et des opérateurs originaux sont ajoutés dans le but d'homogénéiser et/ou clarifier la syntaxe.
+
+> De votre côté, vous êtes libre d'utiliser le style que vous préférez. si la curiosité vous pousse à essayer autre chose et à adopter un autre style que SciViews::R, nous en serons ravis. R est ouvert, il offre beaucoup et c'est à vous maintenant de créer votre propre boite à outils taillée réellement à *votre* mesure !
+
+Pour finir, il parait que les Belges sont forts en autodérision. La caricature suivante devrait vous faire sourire :
+
+<center>
+
+![Prolifération de standards par xkcd.](https://imgs.xkcd.com/comics/standards.png)
+
+</center>
+
+##### À vous de jouer ! {.unnumbered}
+
+`r learnr("A10Lc_syntaxr", title = "Syntaxes dans R", toc = "Syntaxes dans R")`
+
+##### Pour en savoir plus {.unnumbered}
+
+-   [Swirl](https://swirlstats.com) vous permet d'apprendre la syntaxe de base de R de manière conviviale et interactive. Le site R maintient une page de documents et tutoriels [ici](https://cran.r-project.org/other-docs.html) (descendez jusqu'à la section concernant les documents en français si vous préférez travailler dans cette langue). Enfin, les [manuels de R](https://cran.r-project.org/manuals.html) sont un peu techniques, mais ils décrivent dans le détail la syntaxe de base.
+
+-   [Mosaic](http://mosaic-web.org) est une initiative américaine qui vise en partie un objectif assez similaire à celui de SciViews::R : homogénéiser l'interface de R et en faciliter l'apprentissage. [A student's guide to R](https://github.com/ProjectMOSAIC/LittleBooks/blob/master/StudentGuide/MOSAIC-StudentGuide.pdf) est un ouvrage en ligne qui vous apprendra à utiliser R selon le style "mosaic" qui fait la part belle à l'interface formule.
+
+-   La littérature concernant le Tidyverse est abondante. Commencez par le [site web](https://www.tidyverse.org) qui pointe également vers [R for Data Science](https://r4ds.had.co.nz), ou mieux, voyez la [seconde édition](https://r4ds.hadley.nz), que nous conseillons comme première source pour apprendre R à la sauce tidyverse (une version en français au format papier est également [disponible](https://www.eyrolles.com/Informatique/Livre/r-pour-les-data-sciences-9782212675719/)). Voyez ensuite la page "[learn the tidyverse](https://www.tidyverse.org/learn/)" pour divers ouvrages et autres matériels d'apprentissage.
+
+##### À vous de jouer ! {.unnumbered}
+
+Terminez à présent votre projet de groupe sur la biométrie humaine, si ce n'est déjà fait.
+
+```{r assign_A07Ga_human_IV, echo=FALSE, results='asis', purl=FALSE}
+if (exists("assignment2"))
+  assignment2("A07Ga_human", part = "IV",
+    url = "https://github.com/BioDataScience-Course/A07Ga_human",
+        course.ids = c(
+      'S-BIOG-027' = !"A07Ga-{YY}M-human"),
+    course.urls = c(
+      'S-BIOG-027' = !"{assign_url$A07Ga_human}"),
+    course.starts = c(
+      'S-BIOG-027' = !"{class1_start(mod, 'A07')}"),
+    course.ends = c(
+      'S-BIOG-027' = !"{n4_end(mod, 'A10')}"),
+    term = "Q2", level = 4, n = 4,
+    toc = "Biométrie humaine, part IV")
+```
+
+
+## Challenge
+
+Tout au long des modules 6 à 10, vous avez appris à réaliser des tests d'hypothèses avec R et RStudio. Il est maintenant temps de faire un bilan de vos capacités à écrire le code R pour reproduire de tels tests dans un **challenge de rapidité pour la réalisation de tests d'hypothèses.** Vous vous confronterez entre vous de manière individuelle pour déterminer celui ou celle qui arrivera à reproduire fidèlement le plus d'analyses possible.
+
+##### À vous de jouer ! {.unnumbered}
+
+```{r assign_A10Ca_infer, echo=FALSE, results='asis', purl=FALSE}
+if (exists("challenge"))
+  challenge("A10Ca_infer", part = NULL,
+    url = "https://github.com/BioDataScience-Course/A10Ca_infer",
+    course.ids = c(
+      'S-BIOG-027' = !"A10Ca-{YY}M-infer"),
+    course.urls = c(
+      'S-BIOG-027' = !"{assign_url$A10Ca_infer}"),
+    course.starts = c(
+      'S-BIOG-027' = !"{mod['A03', 'challenge']} 10:00:00"),
+    course.ends = c(
+      'S-BIOG-027' = !"{mod['A03', 'challenge']} 13:00:00"),
+    term = "Q2",
+    toc = "Challenge tests d'hypothèses")
+```
+
+::: nocourse
+Vous n'êtes pas correctement enregistré pour ce cours. Vous ne pouvez pas participer à ce challenge. Si vous êtes étudiant•e de l'UMONS, vérifiez que vous vous êtes bien enregistré•e via Moodle...
+:::
+
+::: {.S-BIOG-006 .S-BIOG-027}
+Vous pouvez soumettre vos résultats pendant une période de temps précise via l'application ci-dessous :
+
+`r launch_shiny("https://sdd.umons.ac.be/A10Ca_infer/", height = 800, delay = 20, toc = NULL, alt1 = "*Cliquez pour visualiser le classement.*", alt2 = "*Cliquez pour visualiser le classement.*")`
+:::
+
+
+## Récapitulatif des exercices {#recapitulatifa10}
+
+À l'issue de ce module 10 vous avez appris à utiliser l'ANOVA à deux facteurs sous différentes formes, vous avez aussi approfondi votre maîtrise de R à travers l'indiçage et les principaux styles syntaxiques de R.
+
+![](images/sdd1_12/rstudio_joke.jpg)
+
+Pour évaluer votre compréhension de cette matière, vous aviez les exercices suivants à réaliser :
+
+`r show_ex_toc("10", finalize = TRUE)`
+
+##### Code des exemples {.unnumbered}
+
+-  [Document HTML](more/10-Variance-II.html)
+-  [Script R](https://github.com/BioDataScience-Course/sdd-umons-2025/blob/main/R/10-Variance-II.R){target="top"}
+
+##### Progression {.unnumbered}
+
+`r launch_report("10", height = 800)`

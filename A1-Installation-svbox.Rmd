@@ -1,0 +1,11 @@
+# (APPENDIX) Appendices {.unnumbered}
+
+# Installation de la SciViews Box {#svbox}
+
+```{block, type='note'}
+À partir de l'année académique 2022-2023, la SciViews Box s'utilise sur le Cloud avec SaturnCloud uniquement. Les instructions d'installation sont accessibles depuis la page qui s'affiche lorsque vous cliquez sur le bouton bleu RStudio en haut à droite des pages du site. Cet appendice n'a donc, pour l'instant, plus de raison d'être, mais il est conservé uniquement "pour mémoire".
+```
+
+```{r echo=FALSE, out.width="256px", fig.align='right'}
+knitr::include_graphics('images/sdd1_01/svBox-256.png')
+```
