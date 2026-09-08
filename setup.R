@@ -17,11 +17,11 @@ learnitdown <- list(
   imgbaseurl =
     "https://filedn.com/lzGVgfOGxb6mHFQcRn9ueUb/sdd-umons", # The base URL for external (big) images
   shiny_imgdir = "images/shinyapps",   # The Shiny image directory (screenshots)
-  svbox = 2025,                        # The SciViews Box version used
-  rstudio = "start_rstudio2025.html",  # Run Rstudio from the box
+  svbox = 2026,                        # The SciViews Box version used
+  rstudio = "start_rstudio2026.html",  # Run Rstudio from the box
   package = "BioDataScience1",         # Associated package for the exercises
   institutions = "UMONS",              # Known institutions
-  sets = "25M",                        # The course set (in case there are several ones)
+  sets = "26M",                        # The course set (in case there are several ones)
   courses = c(
     "S-BIOG-006",                      # SDD1 Q1 Mons
     "S-BIOG-027" #,                      # SDD1 Q2 Mons
@@ -33,12 +33,12 @@ learnitdown <- list(
     #"Bio-Informatique et Science des Données à Charleroi"
   ),
   terms = c("Q1", "Q2"),                 # The term of each course
-  acad_year = "2025-2026",               # The academic year
-  YYYY = 2025,                           # The academic year long id
-  YY = 25,                               # The academic year short id
-  W = as.Date("2025-09-07") + (0:37)*7,  # Sundays before each academic week
-  Q1 = as.Date("2025-09-07") + (0:15)*7, # There are 15 weeks at Q1
-  Q2 = as.Date("2026-02-01") + c(0:11, 14:16)*7 # Q2 starts 02/02 w22 but w33-34 are holidays
+  acad_year = "2026-2027",               # The academic year
+  YYYY = 2026,                           # The academic year long id
+  YY = 26,                               # The academic year short id
+  W = as.Date("2026-09-06") + (0:37)*7,  # Sundays before each academic week
+  Q1 = as.Date("2026-09-06") + (0:15)*7, # There are 15 weeks at Q1
+  Q2 = as.Date("2027-01-31") + c(0:11, 14:16)*7 # Q2 starts 02/02 w22 but w33-34 are holidays
 )
 
 # Course start and end dates
@@ -70,22 +70,22 @@ rownames(learnitdown$mod) <- learnitdown$mod$id
 # Assignment URLS
 learnitdown$assign_url <- list(
   # Q1
-  A00Qa_issues         = "https://classroom.github.com/a/NRpZGtDz",
-  A01Ia_scatterplot    = "https://classroom.github.com/a/_XG5igiU",
-  A02Ia_distributions  = "https://classroom.github.com/a/k2L6oNfO",
-  A02Ga_analysis       = "https://classroom.github.com/a/Bop98YHF",
-  A03Ia_graphe_avance  = "https://classroom.github.com/a/pNd8091z",
+  A00Qa_issues         = "https://classroom.github.com/a/...",
+  A01Ia_scatterplot    = "https://classroom.github.com/a/...",
+  A02Ia_distributions  = "https://classroom.github.com/a/...",
+  A02Ga_analysis       = "https://classroom.github.com/a/...",
+  A03Ia_graphe_avance  = "https://classroom.github.com/a/...",
   A03Ca_charts         = "https://classroom.github.com/a/...",
-  A04Ia_transformation = "https://classroom.github.com/a/3g3BVLpd",
-  A04Ga_biometry       = "https://classroom.github.com/a/blC-3zPZ",
-  A05Ia_belgium_demo   = "https://classroom.github.com/a/CQCQZ2OS",
+  A04Ia_transformation = "https://classroom.github.com/a/...",
+  A04Ga_biometry       = "https://classroom.github.com/a/...",
+  A05Ia_belgium_demo   = "https://classroom.github.com/a/...",
   # Q2
-  A06Ia_correlation    = "https://classroom.github.com/a/zBiX2yci",
-  A07Ia_pea            = "https://classroom.github.com/a/do5k6xnr",
-  A07Ga_human          = "https://classroom.github.com/a/1oznwQf6",
-  A08Ia_ttest          = "https://classroom.github.com/a/4UQuKF6f",
-  A09Ia_acidification  = "https://classroom.github.com/a/QvelyvsN",
-  A10Ia_anova2         = "https://classroom.github.com/a/lrYFp5CX",
+  A06Ia_correlation    = "https://classroom.github.com/a/...",
+  A07Ia_pea            = "https://classroom.github.com/a/...",
+  A07Ga_human          = "https://classroom.github.com/a/...",
+  A08Ia_ttest          = "https://classroom.github.com/a/...",
+  A09Ia_acidification  = "https://classroom.github.com/a/...",
+  A10Ia_anova2         = "https://classroom.github.com/a/...",
   A10Ca_infer          = "https://classroom.github.com/a/..."
 )
 
@@ -105,13 +105,13 @@ n4_end <- function(x, module, hour = "23:59:59")
 
 # Examples:
 #!"svbox{svbox} is for academic year {acad_year}"
-#  -> svbox2025 is for academic year 2025-2026
+#  -> svbox2026 is for academic year 2026-2027
 
 # Link inside the courses: the link are a little bit more complex because the
 # bookdown is embedded in a Wordpress site. A direct link like:
-# https://wp.sciviews.org/sdd-umons2-2025/outils-de-diagnostic-suite.html#résumé-avec-summarysuite
+# https://wp.sciviews.org/sdd-umons2-2026/outils-de-diagnostic-suite.html#résumé-avec-summarysuite
 # becomes:
-# https://wp.sciviews.org/sdd-umons2/?iframe=wp.sciviews.org/sdd-umons2-2025/outils-de-diagnostic-suite.html%23résumé-avec-summarysuite
+# https://wp.sciviews.org/sdd-umons2/?iframe=wp.sciviews.org/sdd-umons2-2026/outils-de-diagnostic-suite.html%23résumé-avec-summarysuite
 course_link <- function(label, course = 1, page, anchor = "", year = !"{YYYY}",
     baseurl = !"{baseurl}", course_page = "sdd-umons") {
   if (course == 1) {
