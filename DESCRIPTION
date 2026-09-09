@@ -1,7 +1,7 @@
 Type: Book
 Package: placeholder
-Title: SDD I UMONS version 2025
-Version: 2025.0.0
+Title: SDD I UMONS version 2026
+Version: 2026.0.0
 Depends: 
     learnitdown
 Imports: 

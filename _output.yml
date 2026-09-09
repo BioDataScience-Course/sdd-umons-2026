@@ -15,8 +15,8 @@ bookdown::gitbook:
         <li><a href="https://github.com/BioDataScience-Course">Site Github du cours</a></li>
         <br/>
         <li><a href="https://github.com/rstudio/bookdown" target="blank">Publié avec bookdown</a></li>
-    edit: https://github.com/BioDataScience-Course/sdd-umons-2025/edit/master/%s
-    view: https://github.com/BioDataScience-Course/sdd-umons-2025/blob/master/%s
+    edit: https://github.com/BioDataScience-Course/sdd-umons-2026/edit/master/%s
+    view: https://github.com/BioDataScience-Course/sdd-umons-2026/blob/master/%s
     #download: ["pdf", "epub"]
     sharing:
       facebook: no

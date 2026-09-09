@@ -1,5 +1,5 @@
-# This bookdown in its version 2025 needs the following R packages
-#  R 4.4.3
+# This bookdown in its version 2026 needs the following R packages
+#  R 4.5.3
 # Use the following to list all dependencies:
 #imports <- unique(c("bookdown", "learnitdown", "SciViews",
 #  attachment::att_from_rmds(".")))

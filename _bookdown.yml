@@ -1,6 +1,6 @@
-book_filename: 'sdd-umons-2025'
-repo: 'https://github.com/BioDataScience-Course/sdd-umons-2025'
-output_dir: '../wp.sciviews.org/htdocs/sdd-umons-2025'
+book_filename: 'sdd-umons-2026'
+repo: 'https://github.com/BioDataScience-Course/sdd-umons-2026'
+output_dir: '../wp.sciviews.org/htdocs/sdd-umons-2026'
 clean: [packages.bib, bookdown.bbl]
 delete_merged_file: yes
 new_session: yes
