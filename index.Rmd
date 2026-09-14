@@ -178,8 +178,9 @@ Le plan du cours est une forme de contrat entre les étudiants et les enseignant
 
 ## Issues {#issues .unnumbered}
 
-Toutes les questions relatives aux exercices sont à poser dans les **"issues" GitHub** dédiées à ce cours. Lors de la première lecture de ce préambule, vous ne connaissez pas encore les "issues". Nous allons découvrir ce que cache ce terme lorsque nous travaillerons le premier module du cours. Vous rejoindrez cet espace de discussion par la suite.
+Toutes les questions relatives aux exercices sont à poser dans les **"issues" GitHub** dédiées à ce cours. Lors de la première lecture de ce préambule, vous ne connaissez pas encore les "issues". Nous allons découvrir ce que cache ce terme lorsque nous travaillerons le premier module du cours. Vous rejoindrez cet espace de discussion par la suite. Le lien est : https://github.com/BioDataScience-Course/A00Qa_26M_issues-a26/issues.
 
+<!--
 ```{r assign_A00Qa_issues, echo=FALSE, results='asis'}
 if (exists("assignment2"))
   assignment2("A00Qa_issues", part = NULL, clone = FALSE,
@@ -199,10 +200,11 @@ if (exists("assignment2"))
       course = "[Projet GitHub Classroom d\u00e9di\u00e9e aux issues pour les \u00e9tudiants inscrits au cours de {course_name}]({course_url}){{target=\"_blank\"}}", 
       alt = "Les issues ne sont pas accessibles aux \u00e9tudiants externes."))
 ```
+-->
 
 *Note : vos enseignants sont également accessibles par mail via [sdd\@sciviews.org](mailto:sdd@sciviews.org){.email}, mais uniquement si vos questions nécessitent un échange en privé, sinon, vous devez utiliser les issues.*
 
-Une fois que vous avez rejoint l'équipe **`r !"a{YY}"`**, il n'est plus nécessaire d'utiliser le lien GitHub Classroom vers ces issues. Vous pouvez retrouver directement les issues liées à ce dépôt via la bannière du site.
+Vous pouvez aussi retrouver directement les issues liées à ce dépôt via la bannière du site.
 
 ![](images/sdd1_00/issues.png)
 
