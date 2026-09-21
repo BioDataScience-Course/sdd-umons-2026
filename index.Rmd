@@ -69,7 +69,7 @@ Le matériel pédagogique est aussi varié que possible. Vous pourrez ainsi pioc
 
 -   des [tutoriels interactifs learnr](https://rstudio.github.io/learnr/). Vous pourrez exécuter ces tutoriels directement dans RStudio, et vous aurez alors accès à des pages Web réactives contenant des explications, des exercices et des quiz en ligne dans votre environnement de travail habituel. Ces tutoriels sont repérables par l'icône suivante [![tuto](images/list-tuto.png)](https://wp.sciviews.org/tutorial/){target="_parent"},
 
--   des [dépôts GitHub Classroom](https://classroom.github.com/) dans la section [BioDataScience-Course](https://www.github.com/BioDataScience-Course) pour réaliser et documenter vos travaux personnels. Les liens vers ces dépôts sont repérables par l'icône GitHub [![assign](images/list-assign.png)](https://wp.sciviews.org/github_assignment/){target="_parent"},
+-   des [dépôts GitHub](https://github.com/) dans la section [BioDataScience-Course](https://www.github.com/BioDataScience-Course) pour réaliser et documenter vos travaux personnels. Les liens vers ces dépôts sont repérables par l'icône GitHub [![assign](images/list-assign.png)](https://wp.sciviews.org/github_assignment/){target="_parent"},
 
 -   des renvois vers des documents externes en ligne, des vidéos [Youtube](https://www.youtube.com/) ou [Vimeo](https://vimeo.com/), des livres en anglais ou en français, des blogs, des tutoriels, des questions sur des sites comme [Stackoverflow](https://stackoverflow.com/) ou dans des [mailing lists R](https://www.r-project.org/mail.html), de [X (ex Twitter)](https://twitter.com/)...
 
@@ -178,7 +178,7 @@ Le plan du cours est une forme de contrat entre les étudiants et les enseignant
 
 ## Issues {#issues .unnumbered}
 
-Toutes les questions relatives aux exercices sont à poser dans les **"issues" GitHub** dédiées à ce cours. Lors de la première lecture de ce préambule, vous ne connaissez pas encore les "issues". Nous allons découvrir ce que cache ce terme lorsque nous travaillerons le premier module du cours. Vous rejoindrez cet espace de discussion par la suite. Le lien est : https://github.com/BioDataScience-Course/A00Qa_26M_issues-a26/issues.
+Toutes les questions relatives aux exercices sont à poser dans les **"issues" GitHub** dédiées à ce cours. Lors de la première lecture de ce préambule, vous ne connaissez pas encore les "issues". Nous allons découvrir ce que cache ce terme lorsque nous travaillerons le premier module du cours. Vous rejoindrez cet espace de discussion par la suite. Le lien est : `r !learnitdown$assign_url$A00Qa_issues`.
 
 <!--
 ```{r assign_A00Qa_issues, echo=FALSE, results='asis'}

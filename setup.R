@@ -70,23 +70,23 @@ rownames(learnitdown$mod) <- learnitdown$mod$id
 # Assignment URLS
 learnitdown$assign_url <- list(
   # Q1
-  A00Qa_issues         = "https://classroom.github.com/a/...",
-  A01Ia_scatterplot    = "https://classroom.github.com/a/...",
-  A02Ia_distributions  = "https://classroom.github.com/a/...",
-  A02Ga_analysis       = "https://classroom.github.com/a/...",
-  A03Ia_graphe_avance  = "https://classroom.github.com/a/...",
-  A03Ca_charts         = "https://classroom.github.com/a/...",
-  A04Ia_transformation = "https://classroom.github.com/a/...",
-  A04Ga_biometry       = "https://classroom.github.com/a/...",
-  A05Ia_belgium_demo   = "https://classroom.github.com/a/...",
+  A00Qa_issues         = "https://github.com/BioDataScience-Course/A00Qa_{YY}M_issues-a{YY}/issues",
+  A01Ia_scatterplot    = "https://github.com/orgs/BioDataScience-Course/repositories?q=A01Ia_{YY}M_scatterplot-",
+  A02Ia_distributions  = "https://github.com/orgs/BioDataScience-Course/repositories?q=A02Ia_{YY}M_distributions-",
+  A02Ga_analysis       = "https://github.com/orgs/BioDataScience-Course/repositories?q=A02Ga_{YY}M_analysis-",
+  A03Ia_graphe_avance  = "https://github.com/orgs/BioDataScience-Course/repositories?q=A03Ia_{YY}M_graphe_avance-",
+  A03Ca_charts         = "https://github.com/orgs/BioDataScience-Course/repositories?q=A03Ca_{YY}M_charts-", # To be eliminated!
+  A04Ia_transformation = "https://github.com/orgs/BioDataScience-Course/repositories?q=A04Ia_{YY}M_transformation-",
+  A04Ga_biometry       = "https://github.com/orgs/BioDataScience-Course/repositories?q=A04Ga_{YY}M_biometry-",
+  A05Ia_belgium_demo   = "https://github.com/orgs/BioDataScience-Course/repositories?q=A05Ia_{YY}M_belgium_demo-",
   # Q2
-  A06Ia_correlation    = "https://classroom.github.com/a/...",
-  A07Ia_pea            = "https://classroom.github.com/a/...",
-  A07Ga_human          = "https://classroom.github.com/a/...",
-  A08Ia_ttest          = "https://classroom.github.com/a/...",
-  A09Ia_acidification  = "https://classroom.github.com/a/...",
-  A10Ia_anova2         = "https://classroom.github.com/a/...",
-  A10Ca_infer          = "https://classroom.github.com/a/..."
+  A06Ia_correlation    = "https://github.com/orgs/BioDataScience-Course/repositories?q=A06Ia_{YY}M_correlation-",
+  A07Ia_pea            = "https://github.com/orgs/BioDataScience-Course/repositories?q=A07Ia_{YY}M_pea-",
+  A07Ga_human          = "https://github.com/orgs/BioDataScience-Course/repositories?q=A07Ga_{YY}M_human-",
+  A08Ia_ttest          = "https://github.com/orgs/BioDataScience-Course/repositories?q=A08Ia_{YY}M_ttest-",
+  A09Ia_acidification  = "https://github.com/orgs/BioDataScience-Course/repositories?q=A09Ia_{YY}M_acidification-",
+  A10Ia_anova2         = "https://github.com/orgs/BioDataScience-Course/repositories?q=A10Ia_{YY}M_anova2-",
+  A10Ca_infer          = "https://github.com/orgs/BioDataScience-Course/repositories?q=A10Ca_{YY}M_infer-" # To be eliminated!
 )
 
 # Date and time for start and end of classes for each module
@@ -251,11 +251,13 @@ term = if (as.integer(substring(id, 2, 3)) < 6L) !"{terms[1]}" else
     term = term, set = set)
 
 # Note: use course.urls = c(`S-BIOG-006` = "classroom url1", `S-BIOG-921` = "classroom url2"), and url = link to Github template repository for the assignment
+a_texts <- learnitdown::assignment_fr()
+a_texts$alt <- paste0("**[Votre projet dans GitHub]",
+  "({url}){{target=\"_blank\"}}**")
 assignment <- function(name, url, course.ids = NULL, course.urls = NULL,
   course.starts = NULL, course.ends = NULL, part = NULL, toc = "", clone = TRUE,
   level = 3, n = 1, type = "ind. github", institution = !"{institutions[1]}",
-  acad_year = !"{acad_year}", term = "Q1", set = !"{sets[1]}",
-  texts = learnitdown::assignment_fr())
+  acad_year = !"{acad_year}", term = "Q1", set = !"{sets[1]}", texts = a_texts)
   learnitdown::assignment(name = name, url = url, course.ids = course.ids,
     course.urls = course.urls, course.starts = course.starts,
     course.ends = course.ends, part = part,
@@ -266,11 +268,13 @@ assignment <- function(name, url, course.ids = NULL, course.urls = NULL,
     assign.link = paste(learnitdown$baseurl, "github_assignment", sep = "/"),
     template = "assignment_fr.html", baseurl = learnitdown$baseurl)
 
+a2_texts <- learnitdown::assignment2_fr()
+a2_texts$alt <- paste0("**[Votre projet dans GitHub]",
+  "({url}){{target=\"_blank\"}}**")
 assignment2 <- function(name, url, course.ids = NULL, course.urls = NULL,
   course.starts = NULL, course.ends = NULL, part = NULL, toc = "", clone = TRUE,
   level = 4, n = 2, type = "group github", institution = !"{institutions[1]}",
-  acad_year = !"{acad_year}", term = "Q1",  set = !"{sets[1]}",
-  texts = learnitdown::assignment2_fr())
+  acad_year = !"{acad_year}", term = "Q1",  set = !"{sets[1]}", texts = a2_texts)
   learnitdown::assignment2(name = name, url = url, course.ids = course.ids,
     course.urls = course.urls, course.starts = course.starts,
     course.ends = course.ends, part = part,
