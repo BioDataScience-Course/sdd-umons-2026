@@ -159,7 +159,7 @@ Toutes vos réponses sont collectées et utilisées afin de construire la note f
 Votre progression au sein des exercices est mise à votre disposition à la fin de chaque module, ainsi que depuis Moodle.
 
 ```{block, type='warning'}
-Les notes des exercices plus faciles de niveau 1, 2 et 3 sont comptabilisées séparément des exercices plus difficiles de niveau 4, des challenges et des interrogations, avec une pondération également en faveur de ces derniers. **Votre objectif est donc de bien vous préparer et de réussir vos projets de niveau 4, challenges et interrogations en présentiel.** Les exercices faciles vous aident à bien vous préparer. **Faites-les sérieusement, c'est dans votre intérêt.**
+Les notes des exercices plus faciles de niveau 1, 2 et 3 sont comptabilisées séparément des exercices plus difficiles de niveau 4 et des interrogations, avec une pondération également en faveur de ces derniers. **Votre objectif est donc de bien vous préparer et de réussir vos projets de niveau 4 et interrogations en présentiel.** Les exercices faciles vous aident à bien vous préparer. **Faites-les sérieusement, c'est dans votre intérêt.**
 
 L'évaluation est **continue** tout au long de l'année. Il n'y a pas d'examen en fin d'année et il n'y a pas moyen non plus de repasser un examen en seconde session. La présence aux séances est **obligatoire** pour cette raison et toute absence injustifiée vous coûtera un zéro pour la matière concernée.
 ```
@@ -220,24 +220,24 @@ Enfin, vous apprendrez à utiliser les documents de type "learnr" dans le premie
 
 ## Planning des séances {#planning .unnumbered}
 
-| Module             | Préparation pour le ... | Fin N1-N3            | Projet N4                | Challenge                       | Interrogation              |
-|:-------------------|:------------------------|:---------------------|:-------------------------|:--------------------------------|:---------------------------|
-| **Quadri 1**       |                         |                      |                          |                                 |                            |
-| *(install party)*  | `r !"{mod$start[1]}"`   | `r !"{mod$N3[1]}"`   | `r !"{mod$N4[1]}"`       | **`r !"{mod$challenge[1]}"`**   | **`r !"{mod$test[1]}"`**   |
-| 1 Intro. & visu. I | `r !"{mod$start[2]}"`   | `r !"{mod$N3[2]}"`   | `r !"{mod$N4[2]}"`       | **`r !"{mod$challenge[2]}"`**   | **`r !"{mod$test[2]}"`**   |
-| 2 Visu. II         | `r !"{mod$start[3]}"`   | `r !"{mod$N3[3]}"`   | `r !"{mod$N4[3]}"`       | **`r !"{mod$challenge[3]}"`**   | **`r !"{mod$test[3]}"`**   |
-| *(remédiation)*    | `r !"{mod$start[4]}"`   | `r !"{mod$N3[4]}"`   | `r !"{mod$N4[4]}"`       | **`r !"{mod$challenge[4]}"`**   | **`r !"{mod$test[4]}"`**   |
-| *(remédiation)*    | `r !"{mod$start[5]}"`   | `r !"{mod$N3[5]}"`   | `r !"{mod$N4[5]}"`       | **`r !"{mod$challenge[5]}"`**   | **`r !"{mod$test[5]}"`**   |
-| 3 Visu. III        | `r !"{mod$start[6]}"`   | `r !"{mod$N3[6]}"`   | `r !"{mod$N4[6]}"`       | **`r !"{mod$challenge[6]}"`**   | **`r !"{mod$test[6]}"`**   |
-| 4 Trait. I         | `r !"{mod$start[7]}"`   | `r !"{mod$N3[7]}"`   | `r !"{mod$N4[7]}"`       | **`r !"{mod$challenge[7]}"`**   | **`r !"{mod$test[7]}"`**   |
-| 5 Trait. II        | `r !"{mod$start[8]}"`   | `r !"{mod$N3[8]}"`   | **fin `r !"{mod$N4[8]}"`**   | **`r !"{mod$challenge[8]}"`**   | **`r !"{mod$test[8]}"`**   |
-| **Quadri 2**       |                         |                      |                          |                                 |                            |
-| 6 Proba. & corrél. | `r !"{mod$start[9]}"`   | `r !"{mod$N3[9]}"`   | `r !"{mod$N4[9]}"`       | **`r !"{mod$challenge[9]}"`**   | **`r !"{mod$test[9]}"`**   |
-| 7 Chi^2^           | `r !"{mod$start[10]}"`  | `r !"{mod$N3[10]}"`  | `r !"{mod$N4[10]}"`      | **`r !"{mod$challenge[10]}"`**  | **`r !"{mod$test[10]}"`**  |
-| 8 Moyenne          | `r !"{mod$start[11]}"`  | `r !"{mod$N3[11]}"`  | `r !"{mod$N4[11]}"`      | **`r !"{mod$challenge[11]}"`**  | **`r !"{mod$test[11]}"`**  |
-| 9  Var. I          | `r !"{mod$start[12]}"`  | `r !"{mod$N3[12]}"`  | `r !"{mod$N4[12]}"`      | **`r !"{mod$challenge[12]}"`**  | **`r !"{mod$test[12]}"`**  |
-| *(remédiation)*    | `r !"{mod$start[13]}"`  | `r !"{mod$N3[13]}"`  | `r !"{mod$N4[13]}"`      | **`r !"{mod$challenge[13]}"`**  | **`r !"{mod$test[13]}"`**  |
-| 10 Var. II         | `r !"{mod$start[14]}"`  | `r !"{mod$N3[14]}"`  | **fin `r !"{mod$N4[14]}"`**  | **`r !"{mod$challenge[14]}"`**  | **`r !"{mod$test[14]}"`**  |
+| Module             | Préparation pour le ... | Fin N1-N3            | Projet N4                    |  Interrogation             |
+|:-------------------|:------------------------|:---------------------|:-----------------------------|:---------------------------|
+| **Quadri 1**       |                         |                      |                              |                            |
+| *(install party)*  | `r !"{mod$start[1]}"`   | `r !"{mod$N3[1]}"`   | `r !"{mod$N4[1]}"`           | **`r !"{mod$test[1]}"`**   |
+| 1 Intro. & visu. I | `r !"{mod$start[2]}"`   | `r !"{mod$N3[2]}"`   | `r !"{mod$N4[2]}"`           | **`r !"{mod$test[2]}"`**   |
+| 2 Visu. II         | `r !"{mod$start[3]}"`   | `r !"{mod$N3[3]}"`   | `r !"{mod$N4[3]}"`           | **`r !"{mod$test[3]}"`**   |
+| *(remédiation)*    | `r !"{mod$start[4]}"`   | `r !"{mod$N3[4]}"`   | `r !"{mod$N4[4]}"`           | **`r !"{mod$test[4]}"`**   |
+| *(remédiation)*    | `r !"{mod$start[5]}"`   | `r !"{mod$N3[5]}"`   | `r !"{mod$N4[5]}"`           | **`r !"{mod$test[5]}"`**   |
+| 3 Visu. III        | `r !"{mod$start[6]}"`   | `r !"{mod$N3[6]}"`   | `r !"{mod$N4[6]}"`           | **`r !"{mod$test[6]}"`**   |
+| 4 Trait. I         | `r !"{mod$start[7]}"`   | `r !"{mod$N3[7]}"`   | `r !"{mod$N4[7]}"`           | **`r !"{mod$test[7]}"`**   |
+| 5 Trait. II        | `r !"{mod$start[8]}"`   | `r !"{mod$N3[8]}"`   | **fin `r !"{mod$N4[8]}"`**   | **`r !"{mod$test[8]}"`**   |
+| **Quadri 2**       |                         |                      |                              |                            |
+| 6 Proba. & corrél. | `r !"{mod$start[9]}"`   | `r !"{mod$N3[9]}"`   | `r !"{mod$N4[9]}"`           | **`r !"{mod$test[9]}"`**   |
+| 7 Chi^2^           | `r !"{mod$start[10]}"`  | `r !"{mod$N3[10]}"`  | `r !"{mod$N4[10]}"`          | **`r !"{mod$test[10]}"`**  |
+| 8 Moyenne          | `r !"{mod$start[11]}"`  | `r !"{mod$N3[11]}"`  | `r !"{mod$N4[11]}"`          | **`r !"{mod$test[11]}"`**  |
+| 9  Var. I          | `r !"{mod$start[12]}"`  | `r !"{mod$N3[12]}"`  | `r !"{mod$N4[12]}"`          | **`r !"{mod$test[12]}"`**  |
+| 10 Var. II         | `r !"{mod$start[13]}"`  | `r !"{mod$N3[13]}"`  | **fin `r !"{mod$N4[13]}"`**  | **`r !"{mod$test[13]}"`**  |
+| *(remédiation)*    | `r !"{mod$start[14]}"`  | `r !"{mod$N3[14]}"`  | `r !"{mod$N4[14]}"`          | **`r !"{mod$test[14]}"`**  |
 
 : Dates importantes pour les activités de science des données biologiques I (à 23:59:59 pour les fins de projets N3 ou N4, à l'heure de la séance en présentiel pour les autres dates).
 
@@ -247,7 +247,11 @@ Enfin, vous apprendrez à utiliser les documents de type "learnr" dans le premie
 
 -   Les **projets de groupe** **de niveau 4** se font sur une plus longue durée et à cheval sur plusieurs modules. Étalez et répartissez le travail entre vous. Prévoyez le temps nécessaire pour *terminer* vos rapports avant la date de fin.
 
+<!--
+
 -   Les **challenges** sont des exercices qui se font obligatoirement en séance sous forme de jeux, type compétition entre vous ou contre la montre. *Ils nécessitent d'être au point dans la manipulation du logiciel pour l'analyse de données biologiques en pratique.*
+
+-->
 
 -   Les **interrogations** sont des contrôles classiques en présentiel sur feuille de papier ou sur ordinateur et limités à 30, 45 ou 60 minutes. *Réussir implique que vous ayez assimilé toute la matière vue jusque là.* Prévoyez entre une demi et une journée et demie pour l'étude et la révision avant cette date, selon votre rythme de travail.
 
@@ -257,8 +261,8 @@ Les **séances en présentiel** sont généralement réparties sur une semaine a
 
 ![](images/sdd1_00/semaine_type.png)
 
--   La **première séance de deux heures du lundi** est consacrée aux questions/réponses sur la matière et aux courtes explications en classe. Le projet individuel de niveau 1 est débuté. *Les étudiants doivent étudier la matière pour l'interrogation ou le challenge* et préparer leur seconde série de questions pour la séance suivante.
--   Les **deux premières heures de la seconde séance du vendredi** sont consacrées à la poursuite du projet de niveau 1 qui doit normalement se terminer à ce moment-là, ou presque. Une nouvelle séance de **questions/réponses** et de discussion sur la matière est également prévue. Elle vise à vous préparer au mieux à l'interrogation ou au challenge. Ensuite, après une courte interruption, **une interrogation écrite** a lieu durant environ une demi-heure, sauf autres directives (parfois 45 minutes ou même une heure).
+-   La **première séance de deux heures du lundi** est consacrée aux questions/réponses sur la matière et aux courtes explications en classe. Le projet individuel de niveau 1 est débuté. *Les étudiants doivent étudier la matière pour l'interrogation* et préparer leur seconde série de questions pour la séance suivante.
+-   Les **deux premières heures de la seconde séance du vendredi** sont consacrées à la poursuite du projet de niveau 1 qui doit normalement se terminer à ce moment-là, ou presque. Une nouvelle séance de **questions/réponses** et de discussion sur la matière est également prévue. Elle vise à vous préparer au mieux à l'interrogation. Ensuite, après une courte interruption, **une interrogation écrite** a lieu durant environ une demi-heure, sauf autres directives (parfois 45 minutes ou même une heure).
 -   Les **deux dernières heures de la seconde séance** sont consacrées au travail sur le **projet de groupe**. *À l'issue de ces deux séances, les étudiants terminent leurs exercices de niveaux 1-3 chez eux*, généralement pour le lundi suivant.
 
 *Notez les dates clés dans vos agendas. Les informations ci-dessus sont fournies à titre indicatif pour vous aider à planifier votre travail. Cependant, elles pourraient légèrement évoluer au cours de l’année académique en fonction de l'évolution de l'apprentissage et/ou d'imprévus.*

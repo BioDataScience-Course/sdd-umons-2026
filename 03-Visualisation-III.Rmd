@@ -1013,6 +1013,8 @@ Le développement de votre esprit critique va être long. Pour chaque graphique 
 -   Les unités sont-elles correctes ?
 -   Les grandeurs observées sont-elles plausibles ? Vous pouvez vous rapporter à des éléments connus et comparer. Par exemple, si l'on vous dit qu'une souris adulte pèse 1g, est-ce plausible ou non ? Faites une recherche sur le Web, ou un raisonnement du genre : une souris est constituée principalement d'eau. Un gramme d'eau occupe un volume de 1 cm^3^. Le volume de la souris adulte est-il supérieur, égal ou inférieur à un cube de 1 cm de côté ?
 
+<!--
+
 ## Challenge
 
 Tout au long des trois premiers modules, vous avez appris à utiliser R et RStudio, à écrire des documents en R Markdown, à utiliser git et GitHub... Vous avez également appris à réaliser des graphiques clairs qui présentent visuellement l'information contenue dans des jeux de données. Il est maintenant temps de faire un bilan de tout cela sous une forme ludique : un **challenge de rapidité pour la réalisation de graphiques.** Vous vous confronterez entre vous de manière individuelle pour déterminer celui ou celle qui arrivera à reproduire fidèlement le plus de graphiques possible.
@@ -1020,7 +1022,7 @@ Tout au long des trois premiers modules, vous avez appris à utiliser R et RStud
 ##### À vous de jouer ! {.unnumbered}
 
 ```{r assign_A03Ca_charts, echo=FALSE, results='asis'}
-if (exists("challenge"))
+if (exists("challenge_inactivated"))
   challenge("A03Ca_charts", part = NULL,
     url = "https://github.com/BioDataScience-Course/A03Ca_charts",
     course.ids = c(
@@ -1043,6 +1045,8 @@ Vous pouvez soumettre vos résultats pendant une période de temps précise via 
 
 `r launch_shiny("https://sdd.umons.ac.be/A03Ca_charts/", height = 800, delay = 20, toc = NULL, alt1 = "*Cliquez pour visualiser le classement.*", alt2 = "*Cliquez pour visualiser le classement.*")`
 :::
+
+-->
 
 ## Récapitulatif des exercices {#recapitulatifa03}
 

@@ -1155,6 +1155,7 @@ if (exists("assignment2"))
     toc = "Biométrie humaine, part IV")
 ```
 
+<!--
 
 ## Challenge
 
@@ -1163,7 +1164,7 @@ Tout au long des modules 6 à 10, vous avez appris à réaliser des tests d'hypo
 ##### À vous de jouer ! {.unnumbered}
 
 ```{r assign_A10Ca_infer, echo=FALSE, results='asis', purl=FALSE}
-if (exists("challenge"))
+if (exists("challenge_inactivated"))
   challenge("A10Ca_infer", part = NULL,
     url = "https://github.com/BioDataScience-Course/A10Ca_infer",
     course.ids = c(
@@ -1188,6 +1189,7 @@ Vous pouvez soumettre vos résultats pendant une période de temps précise via 
 `r launch_shiny("https://sdd.umons.ac.be/A10Ca_infer/", height = 800, delay = 20, toc = NULL, alt1 = "*Cliquez pour visualiser le classement.*", alt2 = "*Cliquez pour visualiser le classement.*")`
 :::
 
+-->
 
 ## Récapitulatif des exercices {#recapitulatifa10}
 
