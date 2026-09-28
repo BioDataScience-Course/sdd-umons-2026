@@ -67,26 +67,26 @@ learnitdown$mod <- as.data.frame(tibble::tribble(
 ))
 rownames(learnitdown$mod) <- learnitdown$mod$id
 
-# Assignment URLS (no replacement allowed)
+# Assignment URLS
 learnitdown$assign_url <- list(
   # Q1
-  A00Qa_issues         = "https://github.com/BioDataScience-Course/A00Qa_26M_issues-a26/issues",
-  A01Ia_scatterplot    = "https://github.com/orgs/BioDataScience-Course/repositories?q=A01Ia_26M_scatterplot-",
-  A02Ia_distributions  = "https://github.com/orgs/BioDataScience-Course/repositories?q=A02Ia_26M_distributions-",
-  A02Ga_analysis       = "https://github.com/orgs/BioDataScience-Course/repositories?q=A02Ga_26M_analysis-",
-  A03Ia_graphe_avance  = "https://github.com/orgs/BioDataScience-Course/repositories?q=A03Ia_26M_graphe_avance-",
-  A03Ca_charts         = "https://github.com/orgs/BioDataScience-Course/repositories?q=A03Ca_26M_charts-", # To be eliminated!
-  A04Ia_transformation = "https://github.com/orgs/BioDataScience-Course/repositories?q=A04Ia_26M_transformation-",
-  A04Ga_biometry       = "https://github.com/orgs/BioDataScience-Course/repositories?q=A04Ga_26M_biometry-",
-  A05Ia_belgium_demo   = "https://github.com/orgs/BioDataScience-Course/repositories?q=A05Ia_26M_belgium_demo-",
+  A00Qa_issues         = !"https://github.com/BioDataScience-Course/A00Qa_{YY}M_issues-a{YY}/issues",
+  A01Ia_scatterplot    = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A01Ia_{YY}M_scatterplot-",
+  A02Ia_distributions  = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A02Ia_{YY}M_distributions-",
+  A02Ga_analysis       = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A02Ga_{YY}M_analysis-",
+  A03Ia_graphe_avance  = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A03Ia_{YY}M_graphe_avance-",
+  A03Ca_charts         = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A03Ca_{YY}M_charts-", # To be eliminated!
+  A04Ia_transformation = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A04Ia_{YY}M_transformation-",
+  A04Ga_biometry       = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A04Ga_{YY}M_biometry-",
+  A05Ia_belgium_demo   = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A05Ia_{YY}M_belgium_demo-",
   # Q2
-  A06Ia_correlation    = "https://github.com/orgs/BioDataScience-Course/repositories?q=A06Ia_26M_correlation-",
-  A07Ia_pea            = "https://github.com/orgs/BioDataScience-Course/repositories?q=A07Ia_26M_pea-",
-  A07Ga_human          = "https://github.com/orgs/BioDataScience-Course/repositories?q=A07Ga_26M_human-",
-  A08Ia_ttest          = "https://github.com/orgs/BioDataScience-Course/repositories?q=A08Ia_26M_ttest-",
-  A09Ia_acidification  = "https://github.com/orgs/BioDataScience-Course/repositories?q=A09Ia_26M_acidification-",
-  A10Ia_anova2         = "https://github.com/orgs/BioDataScience-Course/repositories?q=A10Ia_26M_anova2-",
-  A10Ca_infer          = "https://github.com/orgs/BioDataScience-Course/repositories?q=A10Ca_26M_infer-" # To be eliminated!
+  A06Ia_correlation    = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A06Ia_{YY}M_correlation-",
+  A07Ia_pea            = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A07Ia_{YY}M_pea-",
+  A07Ga_human          = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A07Ga_{YY}M_human-",
+  A08Ia_ttest          = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A08Ia_{YY}M_ttest-",
+  A09Ia_acidification  = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A09Ia_{YY}M_acidification-",
+  A10Ia_anova2         = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A10Ia_{YY}M_anova2-",
+  A10Ca_infer          = !"https://github.com/orgs/BioDataScience-Course/repositories?q=A10Ca_{YY}M_infer-" # To be eliminated!
 )
 
 # Date and time for start and end of classes for each module
