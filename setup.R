@@ -274,7 +274,7 @@ a2_texts$alt <- paste0("**[Votre projet dans GitHub]",
 assignment2 <- function(name, url, course.ids = NULL, course.urls = NULL,
   course.starts = NULL, course.ends = NULL, part = NULL, toc = "", clone = TRUE,
   level = 4, n = 2, type = "group github", institution = !"{institutions[1]}",
-  acad_year = !"{acad_year}", term = "Q1",  set = !"{sets[1]}", texts = a2_texts)
+  acad_year = !"{acad_year}", term = "Q1", set = !"{sets[1]}", texts = a2_texts)
   learnitdown::assignment2(name = name, url = url, course.ids = course.ids,
     course.urls = course.urls, course.starts = course.starts,
     course.ends = course.ends, part = part,
